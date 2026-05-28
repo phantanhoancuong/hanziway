@@ -150,36 +150,23 @@ export default function Home() {
 
             {entry ? (
               <div className="flex flex-col gap-4">
-                {(entry.strokeCount || entry.definition) && (
+                {(entry.sc || entry.d) && (
                   <Section label="General">
-                    {entry.strokeCount && (
-                      <Row label="Strokes" value={entry.strokeCount} />
-                    )}
-                    {entry.definition && (
-                      <Row label="Definition" value={entry.definition} />
-                    )}
+                    {entry.sc && <Row label="Strokes" value={entry.sc} />}
+                    {entry.d && <Row label="Definition" value={entry.d} />}
                   </Section>
                 )}
 
-                {entry.mandarin && (
+                {entry.m && (
                   <Section label="Pronunciation">
-                    <Row label="Pinyin" value={entry.mandarin} />
-                    <Row
-                      label="Zhuyin"
-                      value={pinyinToZhuyin(entry.mandarin)}
-                    />
+                    <Row label="Pinyin" value={entry.m} />
+                    <Row label="Zhuyin" value={pinyinToZhuyin(entry.m)} />
                   </Section>
                 )}
 
-                {(entry.cantonese ||
-                  entry.on ||
-                  entry.kun ||
-                  entry.korean ||
-                  entry.vietnamese) && (
+                {(entry.c || entry.on || entry.kun || entry.k || entry.v) && (
                   <CollapsibleSection label="Other languages">
-                    {entry.cantonese && (
-                      <Row label="Cantonese" value={entry.cantonese} />
-                    )}
+                    {entry.c && <Row label="Cantonese" value={entry.c} />}
 
                     {entry.on && (
                       <Row
@@ -205,21 +192,37 @@ export default function Home() {
                       />
                     )}
 
-                    {entry.korean && (
+                    {entry.k && (
                       <Row
                         label="Hanja"
                         value={
                           <Readings
-                            value={entry.korean}
+                            value={entry.k}
                             convert={(r) => hangulRomanization.convert(r)}
                           />
                         }
                       />
                     )}
 
-                    {entry.vietnamese && (
-                      <Row label="Vietnamese" value={entry.vietnamese} />
-                    )}
+                    {entry.v && <Row label="Vietnamese" value={entry.v} />}
+                  </CollapsibleSection>
+                )}
+
+                {entry.cp && entry.cp.length > 0 && (
+                  <CollapsibleSection label="Compounds">
+                    {entry.cp.map((compound, i) => {
+                      const [word, ...rest] = compound;
+                      const simp = rest.length === 3 ? rest[0] : null;
+                      const pinyin = rest.length === 3 ? rest[1] : rest[0];
+                      const definition = rest.length === 3 ? rest[2] : rest[1];
+                      return (
+                        <Row
+                          key={i}
+                          label={simp ? `${word} / ${simp}` : word}
+                          value={`${pinyin} — ${definition}`}
+                        />
+                      );
+                    })}
                   </CollapsibleSection>
                 )}
               </div>
