@@ -7,53 +7,22 @@ import hangulRomanization from "hangul-romanization";
 import { pinyinToZhuyin } from "pinyin-zhuyin";
 import { toHiragana, toKatakana } from "wanakana";
 
-import { CharacterWriter } from "@/components/clients";
+import {
+  CharacterWriter,
+  CollapsibleSection,
+  Row,
+  Section,
+} from "@/components/clients";
 import { CharacterEntry, lookupCharacter } from "@/lib";
 
-const Section = ({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) => (
-  <div className="flex flex-col gap-1">
-    <span className="text-xs font-semibold opacity-40 uppercase tracking-wider">
-      {label}
-    </span>
-    <div className="flex flex-col gap-0.5">{children}</div>
-  </div>
-);
-
-const CollapsibleSection = ({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) => {
-  const [open, setOpen] = useState(true);
-
-  return (
-    <div className="flex flex-col gap-1">
-      <button
-        onClick={() => setOpen((o) => !o)}
-        className="flex items-center gap-1 text-xs font-semibold opacity-40 uppercase tracking-wider cursor-pointer hover:opacity-70 transition-opacity w-fit"
-      >
-        <span>{open ? "▼" : "▶"}</span>
-        <span>{label}</span>
-      </button>
-      {open && <div className="flex flex-col gap-0.5">{children}</div>}
-    </div>
-  );
-};
-
-const Row = ({ label, value }: { label: string; value: React.ReactNode }) => (
-  <p className="text-sm">
-    <span className="opacity-60">{label}</span> {value}
-  </p>
-);
-
+/**
+ * Render transformed readings alongside their original forms.
+ *
+ * This is often used in the format of `original scripts (romanized scripts)`.
+ *
+ * @param props.value - Space-delimited source readings.
+ * @param props.convert - Convert an individual reading into a target script.
+ */
 const Readings = ({
   value,
   convert,
@@ -85,10 +54,13 @@ export default function Home() {
     lookupCharacter(character).then(setEntry);
   }, [selectedIndex]);
 
-  useEffect(() => {
-    console.log(entry);
-  }, [entry]);
-
+  /**
+   * Commit the current input as a searchable query.
+   *
+   * Normalize submitted text before lookup so downstream logic only operates on supported characters.
+   *
+   * @param e - Form submission event.
+   */
   const handleSubmit = (e: React.SubmitEvent) => {
     e.preventDefault();
     const filtered = [...inputText.trim()].filter(isCJK).join("");
@@ -98,6 +70,14 @@ export default function Home() {
     setSelectedIndex(0);
   };
 
+  /**
+   * Filter characters to supported CJK ideographs.
+   *
+   * Prevent unsupported characters from entering the lookup pipeline, avoiding invalid dictionary requests.
+   *
+   * @param char - Character to validate.
+   * @returns Whether the character belongs to a supported CJK range.
+   */
   const isCJK = (char: string): boolean => {
     const code = char.codePointAt(0) ?? 0;
     return (

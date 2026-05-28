@@ -1,10 +1,15 @@
 "use client";
+import { useEffect, useRef } from "react";
 
 import HanziWriter from "hanzi-writer";
-import { useEffect, useRef, useState } from "react";
 
+/**
+ * Display and animate a Hanzi character.
+ */
 const CharacterWriter = ({ character }: { character: string }) => {
+  // HanziWriter performs imperative DOM rendering outside React, so we have to use a direct element reference.
   const targetDivRef = useRef<HTMLDivElement>(null);
+  // The writer instance is mutable and must not trigger React re-renders so we use a ref.
   const hanziWriterRef = useRef<HanziWriter>(null);
 
   useEffect(() => {
