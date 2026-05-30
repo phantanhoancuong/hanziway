@@ -45,7 +45,7 @@ export default function Home() {
   const [query, setQuery] = useState<string>("");
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [displayedCharacter, setDisplayedCharacter] = useState<string>("");
-  const [entry, setEntry] = useState<CharacterEntry | null>(null);
+  const [entry, setEntry] = useState<CharacterEntry | null | undefined>(null);
 
   useEffect(() => {
     if (selectedIndex === null || !query) {
@@ -54,7 +54,7 @@ export default function Home() {
     }
     const character = query[selectedIndex];
     setDisplayedCharacter(character);
-    lookupCharacter(character).then(setEntry);
+    lookupCharacter(character).then((result) => setEntry(result ?? undefined));
   }, [selectedIndex]);
 
   /**
@@ -86,7 +86,7 @@ export default function Home() {
     setSelectedIndex(null);
     setDisplayedCharacter(character);
     const newEntry = await lookupCharacter(character);
-    setEntry(newEntry);
+    setEntry(newEntry ?? undefined);
   };
 
   const characters = query ? [...query] : [];
@@ -141,86 +141,87 @@ export default function Home() {
         )}
 
         {entry !== null && (
-          <div className="flex gap-6 items-start">
-            <div className="relative shrink-0">
-              <CharacterWriter character={displayedCharacter} />
-              <div className="absolute inset-0 border-2 border-red-500 pointer-events-none" />
-            </div>
+          <div className="flex flex-col gap-6 w-full">
+            {entry !== undefined ? (
+              <>
+                <div className="grid grid-cols-2 gap-6 items-start">
+                  <CharacterWriter character={displayedCharacter} />
 
-            {entry ? (
-              <div className="flex flex-col gap-4">
-                {(entry.sc || entry.d) && (
-                  <Section label="General">
-                    {entry.sc && <Row label="Strokes" value={entry.sc} />}
-                    {entry.d && (
-                      <Row
-                        label="Definition"
-                        value={
-                          <ClickableCharacters
-                            text={entry.d}
-                            test={(char) => CJK_RE.test(char)}
-                            onCharacterClick={handleCharacterClick}
+                  <div className="flex flex-col gap-4 flex-1">
+                    {(entry.sc || entry.d) && (
+                      <Section label="General">
+                        {entry.sc && <Row label="Strokes" value={entry.sc} />}
+                        {entry.d && (
+                          <Row
+                            label="Definition"
+                            value={
+                              <ClickableCharacters
+                                text={entry.d}
+                                test={(char) => CJK_RE.test(char)}
+                                onCharacterClick={handleCharacterClick}
+                              />
+                            }
                           />
-                        }
-                      />
+                        )}
+                      </Section>
                     )}
-                  </Section>
-                )}
 
-                {entry.m && (
-                  <Section label="Pronunciation">
-                    <Row label="Pinyin" value={entry.m} />
-                    <Row label="Zhuyin" value={pinyinToZhuyin(entry.m)} />
-                  </Section>
-                )}
+                    {entry.m && (
+                      <Section label="Pronunciation">
+                        <Row label="Pinyin" value={entry.m} />
+                        <Row label="Zhuyin" value={pinyinToZhuyin(entry.m)} />
+                      </Section>
+                    )}
 
-                {(entry.c || entry.on || entry.kun || entry.k || entry.v) && (
-                  <CollapsibleSection label="Other languages">
-                    {entry.c && <Row label="Cantonese" value={entry.c} />}
-
-                    {entry.on && (
+                    <CollapsibleSection label="Other languages">
+                      <Row label="Cantonese" value={entry.c ?? "—"} />
                       <Row
                         label="Onyomi"
                         value={
-                          <Readings
-                            value={entry.on}
-                            convert={(r) => toKatakana(r)}
-                          />
+                          entry.on ? (
+                            <Readings
+                              value={entry.on}
+                              convert={(r) => toKatakana(r)}
+                            />
+                          ) : (
+                            "—"
+                          )
                         }
                       />
-                    )}
-
-                    {entry.kun && (
                       <Row
                         label="Kunyomi"
                         value={
-                          <Readings
-                            value={entry.kun}
-                            convert={(r) => toHiragana(r)}
-                          />
+                          entry.kun ? (
+                            <Readings
+                              value={entry.kun}
+                              convert={(r) => toHiragana(r)}
+                            />
+                          ) : (
+                            "—"
+                          )
                         }
                       />
-                    )}
-
-                    {entry.k && (
                       <Row
                         label="Hanja"
                         value={
-                          <Readings
-                            value={entry.k}
-                            convert={(r) => hangulRomanization.convert(r)}
-                          />
+                          entry.k ? (
+                            <Readings
+                              value={entry.k}
+                              convert={(r) => hangulRomanization.convert(r)}
+                            />
+                          ) : (
+                            "—"
+                          )
                         }
                       />
-                    )}
-
-                    {entry.v && <Row label="Vietnamese" value={entry.v} />}
-                  </CollapsibleSection>
-                )}
+                      <Row label="Vietnamese" value={entry.v ?? "—"} />
+                    </CollapsibleSection>
+                  </div>
+                </div>
 
                 {entry.cp && entry.cp.length > 0 && (
                   <CollapsibleSection label="Compounds">
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full">
                       {entry.cp.map((compound, index) => {
                         const word = compound[0];
                         const simp = compound.length === 4 ? compound[1] : null;
@@ -268,7 +269,7 @@ export default function Home() {
                     </div>
                   </CollapsibleSection>
                 )}
-              </div>
+              </>
             ) : (
               <p className="text-sm opacity-40">No entry found</p>
             )}
