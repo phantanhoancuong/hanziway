@@ -13,7 +13,7 @@ import {
   Row,
   Section,
 } from "@/components/clients";
-import { CharacterEntry, lookupCharacter } from "@/lib";
+import { CJK_RE, CharacterEntry, lookupCharacter } from "@/lib";
 
 /**
  * Render transformed readings alongside their original forms.
@@ -63,29 +63,13 @@ export default function Home() {
    */
   const handleSubmit = (e: React.SubmitEvent) => {
     e.preventDefault();
-    const filtered = [...inputText.trim()].filter(isCJK).join("");
+    const filtered = [...inputText.trim()]
+      .filter((char) => CJK_RE.test(char))
+      .join("");
     if (!filtered) return;
     setQuery(filtered);
     setInputText("");
     setSelectedIndex(0);
-  };
-
-  /**
-   * Filter characters to supported CJK ideographs.
-   *
-   * Prevent unsupported characters from entering the lookup pipeline, avoiding invalid dictionary requests.
-   *
-   * @param char - Character to validate.
-   * @returns Whether the character belongs to a supported CJK range.
-   */
-  const isCJK = (char: string): boolean => {
-    const code = char.codePointAt(0) ?? 0;
-    return (
-      (code >= 0x4e00 && code <= 0x9fff) ||
-      (code >= 0x3400 && code <= 0x4dbf) ||
-      (code >= 0x20000 && code <= 0x2a6df) ||
-      (code >= 0xf900 && code <= 0xfaff)
-    );
   };
 
   const characters = query ? [...query] : [];

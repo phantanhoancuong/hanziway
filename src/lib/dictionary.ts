@@ -66,3 +66,9 @@ export const lookupCharacter = async (
   const key = index!.get(character);
   return key ? dictionary[key] : null;
 };
+
+/**
+ * Match a single CJK ideograph.
+ * Use with single characters only.
+ */
+export const CJK_RE = /[\u4e00-\u9fff\u3400-\u4dbf\uf900-\ufaff]/u;
