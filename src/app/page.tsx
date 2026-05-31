@@ -14,7 +14,7 @@ import {
   Row,
   Section,
 } from "@/components/clients";
-import { CJK_RE, CharacterLookupResult, lookupCharacter } from "@/lib";
+import { CJK_RE, CharacterEntry, lookupCharacter } from "@/lib";
 
 /**
  * Render transformed readings alongside their original forms.
@@ -45,19 +45,17 @@ export default function Home() {
   const [query, setQuery] = useState<string>("");
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [displayedCharacter, setDisplayedCharacter] = useState<string>("");
-  const [result, setResult] = useState<
-    CharacterLookupResult | null | undefined
-  >(null);
+  const [entry, setEntry] = useState<CharacterEntry | null | undefined>(null);
 
   useEffect(() => {
     if (selectedIndex === null || !query) {
-      setResult(null);
+      setEntry(null);
       return;
     }
     const character = query[selectedIndex];
     setDisplayedCharacter(character);
-    lookupCharacter(character).then((r) => setResult(r ?? undefined));
-  }, [selectedIndex]);
+    lookupCharacter(character).then((r) => setEntry(r ?? undefined));
+  }, [selectedIndex, query]);
 
   /**
    * Commit the current input as a searchable query.
@@ -87,23 +85,18 @@ export default function Home() {
   const handleCharacterClick = async (character: string) => {
     setSelectedIndex(null);
     setDisplayedCharacter(character);
-    const r = await lookupCharacter(character);
-    setResult(r ?? undefined);
+    const result = await lookupCharacter(character);
+    setEntry(result ?? undefined);
   };
 
   const characters = query ? [...query] : [];
-  const entry = result?.entry;
 
-  const variantChar = result
-    ? displayedCharacter === result.key
-      ? entry?.s
-      : result.key
-    : undefined;
-  const variantLabel = result
-    ? displayedCharacter === result.key
-      ? "Simplified"
-      : "Traditional"
-    : undefined;
+  const variantChar = entry?.s ?? entry?.t;
+  const variantLabel = entry?.s
+    ? "Simplified"
+    : entry?.t
+      ? "Traditional"
+      : undefined;
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -154,9 +147,9 @@ export default function Home() {
           </div>
         )}
 
-        {result !== null && (
+        {entry !== null && (
           <div className="flex flex-col gap-6 w-full">
-            {result !== undefined ? (
+            {entry !== undefined ? (
               <>
                 <div className="grid grid-cols-2 gap-6 items-start">
                   <div className="flex flex-col gap-2">
@@ -257,53 +250,31 @@ export default function Home() {
                   </div>
                 </div>
 
-                {entry?.cp && entry.cp.length > 0 && (
+                {entry.cp && entry.cp.length > 0 && (
                   <CollapsibleSection label="Compounds">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full">
-                      {entry.cp.map((compound, index) => {
-                        const word = compound[0];
-                        const simp = compound.length === 4 ? compound[1] : null;
-                        const pinyin =
-                          compound.length === 4 ? compound[2] : compound[1];
-                        const definition =
-                          compound.length === 4 ? compound[3] : compound[2];
-
-                        return (
-                          <div
-                            className="border-2 p-3 border-foreground/20 rounded-sm"
-                            key={index}
-                          >
-                            <div className="text-sm font-bold flex gap-2">
-                              <span>
-                                <ClickableCharacters
-                                  text={word}
-                                  test={(char) => CJK_RE.test(char)}
-                                  onCharacterClick={handleCharacterClick}
-                                />
-                              </span>
-
-                              {simp && (
-                                <span>
-                                  {` / `}
-                                  <ClickableCharacters
-                                    text={simp}
-                                    test={(char) => CJK_RE.test(char)}
-                                    onCharacterClick={handleCharacterClick}
-                                  />
-                                </span>
-                              )}
-                            </div>
-                            <div className="text-xs opacity-60">{pinyin}</div>
-                            <div className="text-sm">
-                              <ClickableCharacters
-                                text={definition}
-                                test={(char) => CJK_RE.test(char)}
-                                onCharacterClick={handleCharacterClick}
-                              />
-                            </div>
+                      {entry.cp.map(([word, pinyin, definition], index) => (
+                        <div
+                          className="border-2 p-3 border-foreground/20 rounded-sm"
+                          key={index}
+                        >
+                          <div className="text-sm font-bold">
+                            <ClickableCharacters
+                              text={word}
+                              test={(char) => CJK_RE.test(char)}
+                              onCharacterClick={handleCharacterClick}
+                            />
                           </div>
-                        );
-                      })}
+                          <div className="text-xs opacity-60">{pinyin}</div>
+                          <div className="text-sm">
+                            <ClickableCharacters
+                              text={definition}
+                              test={(char) => CJK_RE.test(char)}
+                              onCharacterClick={handleCharacterClick}
+                            />
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </CollapsibleSection>
                 )}

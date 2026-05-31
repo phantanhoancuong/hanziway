@@ -20,27 +20,18 @@ export type CharacterEntry = {
   sc?: string;
   /** Simplified Chinese variant of this character. Omitted when the character is script-neutral. */
   s?: string;
+  /** Traditional Chinese variant of this character. Omitted when the character is script-neutral. */
+  t?: string;
   /**
-   * Common compounds containing this character, sourced from CC-CEDICT and filtered to HSK 3.0 and TOCFL word lists. Each tuple is either:
-   * - `[word, pinyin, definition]` for script-neutral compound.
-   * - `[trad, simp, pinyin, definition]`.
+   * Common compounds containing this character, sourced from CC-CEDICT and filtered to HSK and TOCFL word lists.
+   * Each tuple is `[word, pinyin, definition]` in the same script as the entry.
    */
-  cp?: ([string, string, string] | [string, string, string, string])[];
-};
-
-/**
- * Result of a character lookup, the key is returned to determine the script form that is being inspected.
- */
-export type CharacterLookupResult = {
-  key: string;
-  entry: CharacterEntry;
+  cp?: [string, string, string][];
 };
 
 type Dictionary = Record<string, CharacterEntry>;
 
 let dictionary: Dictionary | null = null;
-
-let index: Map<string, string> | null = null;
 
 /**
  * Fetch and cache the dictionary from `/dictionary.json`.
@@ -51,13 +42,6 @@ const getDictionary = async (): Promise<Dictionary> => {
   if (dictionary) return dictionary;
   const response = await fetch("/dictionary.json");
   dictionary = await response.json();
-
-  index = new Map();
-  for (const [trad, entry] of Object.entries(dictionary!)) {
-    index.set(trad, trad);
-    if (entry.s) index.set(entry.s, trad);
-  }
-
   return dictionary!;
 };
 
@@ -69,11 +53,9 @@ const getDictionary = async (): Promise<Dictionary> => {
  */
 export const lookupCharacter = async (
   character: string,
-): Promise<CharacterLookupResult | null> => {
-  const dictionary = await getDictionary();
-  const key = index!.get(character);
-  if (!key) return null;
-  return { key, entry: dictionary[key] };
+): Promise<CharacterEntry | null> => {
+  const dict = await getDictionary();
+  return dict[character] ?? null;
 };
 
 /**
