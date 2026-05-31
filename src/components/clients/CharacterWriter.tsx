@@ -10,7 +10,13 @@ import HanziWriter from "hanzi-writer";
  *
  * @param props.character - The Chinese character to display.
  */
-const CharacterWriter = ({ character }: { character: string }) => {
+const CharacterWriter = ({
+  character,
+  isLoop = true,
+}: {
+  character: string;
+  isLoop?: boolean;
+}) => {
   // HanziWriter performs imperative DOM rendering outside React, so we have to use a direct element reference.
   const targetDivRef = useRef<HTMLDivElement>(null);
   // The writer instance is mutable and must not trigger React re-renders so we use a ref.
@@ -41,7 +47,7 @@ const CharacterWriter = ({ character }: { character: string }) => {
       },
     );
 
-    hanziWriterRef.current.loopCharacterAnimation();
+    if (isLoop) hanziWriterRef.current.loopCharacterAnimation();
 
     return () => {
       if (targetDivRef.current) targetDivRef.current.innerHTML = "";

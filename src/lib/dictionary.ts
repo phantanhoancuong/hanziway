@@ -28,6 +28,14 @@ export type CharacterEntry = {
   cp?: ([string, string, string] | [string, string, string, string])[];
 };
 
+/**
+ * Result of a character lookup, the key is returned to determine the script form that is being inspected.
+ */
+export type CharacterLookupResult = {
+  key: string;
+  entry: CharacterEntry;
+};
+
 type Dictionary = Record<string, CharacterEntry>;
 
 let dictionary: Dictionary | null = null;
@@ -57,14 +65,15 @@ const getDictionary = async (): Promise<Dictionary> => {
  * Look up a single character in the dictionary. Accept both traditional and simplified forms.
  *
  * @param character - The Chinese character to look up.
- * @returns The character entry, or `null` if not found.
+ * @returns The lookup result containing the key and character entry data, or `null` if not found.
  */
 export const lookupCharacter = async (
   character: string,
-): Promise<CharacterEntry | null> => {
+): Promise<CharacterLookupResult | null> => {
   const dictionary = await getDictionary();
   const key = index!.get(character);
-  return key ? dictionary[key] : null;
+  if (!key) return null;
+  return { key, entry: dictionary[key] };
 };
 
 /**

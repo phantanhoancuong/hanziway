@@ -14,7 +14,7 @@ import {
   Row,
   Section,
 } from "@/components/clients";
-import { CJK_RE, CharacterEntry, lookupCharacter } from "@/lib";
+import { CJK_RE, CharacterLookupResult, lookupCharacter } from "@/lib";
 
 /**
  * Render transformed readings alongside their original forms.
@@ -45,16 +45,18 @@ export default function Home() {
   const [query, setQuery] = useState<string>("");
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [displayedCharacter, setDisplayedCharacter] = useState<string>("");
-  const [entry, setEntry] = useState<CharacterEntry | null | undefined>(null);
+  const [result, setResult] = useState<
+    CharacterLookupResult | null | undefined
+  >(null);
 
   useEffect(() => {
     if (selectedIndex === null || !query) {
-      setEntry(null);
+      setResult(null);
       return;
     }
     const character = query[selectedIndex];
     setDisplayedCharacter(character);
-    lookupCharacter(character).then((result) => setEntry(result ?? undefined));
+    lookupCharacter(character).then((r) => setResult(r ?? undefined));
   }, [selectedIndex]);
 
   /**
@@ -78,18 +80,30 @@ export default function Home() {
   /**
    * Look up a character clicked anywhere on the page.
    *
-   * Update the detail panel.
+   * Update the detail panel without affecting the query or selected index.
    *
    * @param character - The CJK character that was clicked.
    */
   const handleCharacterClick = async (character: string) => {
     setSelectedIndex(null);
     setDisplayedCharacter(character);
-    const newEntry = await lookupCharacter(character);
-    setEntry(newEntry ?? undefined);
+    const r = await lookupCharacter(character);
+    setResult(r ?? undefined);
   };
 
   const characters = query ? [...query] : [];
+  const entry = result?.entry;
+
+  const variantChar = result
+    ? displayedCharacter === result.key
+      ? entry?.s
+      : result.key
+    : undefined;
+  const variantLabel = result
+    ? displayedCharacter === result.key
+      ? "Simplified"
+      : "Traditional"
+    : undefined;
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -140,18 +154,42 @@ export default function Home() {
           </div>
         )}
 
-        {entry !== null && (
+        {result !== null && (
           <div className="flex flex-col gap-6 w-full">
-            {entry !== undefined ? (
+            {result !== undefined ? (
               <>
                 <div className="grid grid-cols-2 gap-6 items-start">
-                  <CharacterWriter character={displayedCharacter} />
+                  <div className="flex flex-col gap-2">
+                    <CharacterWriter character={displayedCharacter} />
+                    <div
+                      className={`flex flex-col items-start gap-1 w-1/3 sm:w-1/4 transition-opacity ${
+                        variantChar
+                          ? "opacity-60 hover:opacity-100 cursor-pointer"
+                          : "invisible"
+                      }`}
+                      onClick={() =>
+                        variantChar && handleCharacterClick(variantChar)
+                      }
+                    >
+                      <span className="text-xs">
+                        {variantLabel ?? "\u00A0"}
+                      </span>
+                      <div className="w-full aspect-square">
+                        {variantChar && (
+                          <CharacterWriter
+                            character={variantChar}
+                            isLoop={false}
+                          />
+                        )}
+                      </div>
+                    </div>
+                  </div>
 
                   <div className="flex flex-col gap-4 flex-1">
-                    {(entry.sc || entry.d) && (
+                    {(entry?.sc || entry?.d) && (
                       <Section label="General">
-                        {entry.sc && <Row label="Strokes" value={entry.sc} />}
-                        {entry.d && (
+                        {entry?.sc && <Row label="Strokes" value={entry.sc} />}
+                        {entry?.d && (
                           <Row
                             label="Definition"
                             value={
@@ -166,7 +204,7 @@ export default function Home() {
                       </Section>
                     )}
 
-                    {entry.m && (
+                    {entry?.m && (
                       <Section label="Pronunciation">
                         <Row label="Pinyin" value={entry.m} />
                         <Row label="Zhuyin" value={pinyinToZhuyin(entry.m)} />
@@ -174,11 +212,11 @@ export default function Home() {
                     )}
 
                     <CollapsibleSection label="Other languages">
-                      <Row label="Cantonese" value={entry.c ?? "—"} />
+                      <Row label="Cantonese" value={entry?.c ?? "—"} />
                       <Row
                         label="Onyomi"
                         value={
-                          entry.on ? (
+                          entry?.on ? (
                             <Readings
                               value={entry.on}
                               convert={(r) => toKatakana(r)}
@@ -191,7 +229,7 @@ export default function Home() {
                       <Row
                         label="Kunyomi"
                         value={
-                          entry.kun ? (
+                          entry?.kun ? (
                             <Readings
                               value={entry.kun}
                               convert={(r) => toHiragana(r)}
@@ -204,7 +242,7 @@ export default function Home() {
                       <Row
                         label="Hanja"
                         value={
-                          entry.k ? (
+                          entry?.k ? (
                             <Readings
                               value={entry.k}
                               convert={(r) => hangulRomanization.convert(r)}
@@ -214,12 +252,12 @@ export default function Home() {
                           )
                         }
                       />
-                      <Row label="Vietnamese" value={entry.v ?? "—"} />
+                      <Row label="Vietnamese" value={entry?.v ?? "—"} />
                     </CollapsibleSection>
                   </div>
                 </div>
 
-                {entry.cp && entry.cp.length > 0 && (
+                {entry?.cp && entry.cp.length > 0 && (
                   <CollapsibleSection label="Compounds">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full">
                       {entry.cp.map((compound, index) => {
