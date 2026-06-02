@@ -6,16 +6,21 @@ import HanziWriter from "hanzi-writer";
 /**
  * Display and animate a Hanzi character.
  *
- * The Hanzi character sizes itself to 80% of its container width.
+ * Sizes itself to 80% of its container width automatically.
+ * Falls back to displaying the character as text if HanziWriter does not have stroke data for it.
  *
  * @param props.character - The Chinese character to display.
+ * @param props.isLoop - Whether to loop the stroke animation. Defaults to true.
+ * @param props.highlight - Whether to show a red border. Defaults to true.
  */
 const CharacterWriter = ({
   character,
   isLoop = true,
+  highlight = true,
 }: {
   character: string;
   isLoop?: boolean;
+  highlight?: boolean;
 }) => {
   // HanziWriter performs imperative DOM rendering outside React, so we have to use a direct element reference.
   const targetDivRef = useRef<HTMLDivElement>(null);
@@ -23,7 +28,9 @@ const CharacterWriter = ({
   const hanziWriterRef = useRef<HanziWriter>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState<number>(0);
+  const [loadFailed, setLoadFailed] = useState(false);
 
+  // Observe the container and derive the writer size from its width.
   useEffect(() => {
     if (!containerRef.current) return;
     const observer = new ResizeObserver(([entry]) => {
@@ -33,8 +40,13 @@ const CharacterWriter = ({
     return () => observer.disconnect();
   }, []);
 
+  // Reset load failure state when character changes.
   useEffect(() => {
-    if (!targetDivRef.current || size === 0) return;
+    setLoadFailed(false);
+  }, [character]);
+
+  useEffect(() => {
+    if (!targetDivRef.current || size === 0 || loadFailed) return;
 
     hanziWriterRef.current = HanziWriter.create(
       targetDivRef.current,
@@ -43,7 +55,9 @@ const CharacterWriter = ({
         width: size,
         height: size,
         padding: 5,
-        strokeColor: `#ff0000`,
+        strokeColor: highlight ? "#ff0000" : "#ffffff",
+
+        onLoadCharDataError: () => setLoadFailed(true),
       },
     );
 
@@ -52,14 +66,20 @@ const CharacterWriter = ({
     return () => {
       if (targetDivRef.current) targetDivRef.current.innerHTML = "";
     };
-  }, [character, size]);
+  }, [character, size, loadFailed]);
 
   return (
     <div
       ref={containerRef}
-      className="w-full aspect-square flex items-center justify-center border-2 border-red-500"
+      className={`w-full aspect-square flex items-center justify-center border-2 ${
+        highlight ? "border-red-500" : "border-foreground/20"
+      } ${size === 0 ? "invisible" : ""}`}
     >
-      <div ref={targetDivRef} />
+      {loadFailed ? (
+        <span style={{ fontSize: size * 0.7 }}>{character}</span>
+      ) : (
+        <div ref={targetDivRef} />
+      )}
     </div>
   );
 };

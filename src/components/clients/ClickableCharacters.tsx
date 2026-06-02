@@ -21,7 +21,7 @@ const ClickableCharacters = ({
             {character}
           </span>
         ) : (
-          <span key={index}>{character}</span>
+          character
         ),
       )}
     </>
