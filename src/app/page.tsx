@@ -10,35 +10,9 @@ import { toHiragana, toKatakana } from "wanakana";
 import {
   CharacterWriter,
   ClickableCharacters,
-  CollapsibleSection,
-  Row,
   Section,
 } from "@/components/clients";
 import { CJK_RE, CharacterEntry, lookupCharacter } from "@/lib";
-
-/**
- * Render transformed readings alongside their original forms.
- *
- * This is often used in the format of `original scripts (romanized scripts)`.
- *
- * @param props.value - Space-delimited source readings.
- * @param props.convert - Convert an individual reading into a target script.
- */
-const Readings = ({
-  value,
-  convert,
-}: {
-  value: string;
-  convert: (reading: string) => string;
-}) => (
-  <>
-    {value.split(" ").map((reading, i, arr) => (
-      <span key={i}>
-        {convert(reading)} ({reading}){i < arr.length - 1 ? " | " : ""}
-      </span>
-    ))}
-  </>
-);
 
 export default function Home() {
   const [inputText, setInputText] = useState<string>("");
@@ -90,13 +64,6 @@ export default function Home() {
   };
 
   const characters = query ? [...query] : [];
-
-  const variantChar = entry?.s ?? entry?.t;
-  const variantLabel = entry?.s
-    ? "Simplified"
-    : entry?.t
-      ? "Traditional"
-      : undefined;
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -151,107 +118,170 @@ export default function Home() {
           <div className="flex flex-col gap-6 w-full">
             {entry !== undefined ? (
               <>
-                <div className="grid grid-cols-2 gap-6 items-start">
+                <div
+                  className="grid gap-6 items-start"
+                  style={{ gridTemplateColumns: "50% 50%" }}
+                >
                   <div className="flex flex-col gap-2">
                     <CharacterWriter character={displayedCharacter} />
-                    <div
-                      className={`flex flex-col items-start gap-1 w-1/3 sm:w-1/4 transition-opacity ${
-                        variantChar
-                          ? "opacity-60 hover:opacity-100 cursor-pointer"
-                          : "invisible"
-                      }`}
-                      onClick={() =>
-                        variantChar && handleCharacterClick(variantChar)
-                      }
-                    >
-                      <span className="text-xs">
-                        {variantLabel ?? "\u00A0"}
-                      </span>
-                      <div className="w-full aspect-square">
-                        {variantChar && (
-                          <CharacterWriter
-                            character={variantChar}
-                            isLoop={false}
-                          />
-                        )}
+
+                    {entry.var && entry.var.length > 0 && (
+                      <div className="flex flex-col gap-1">
+                        <span className="text-xs font-semibold opacity-40 uppercase tracking-wider">
+                          {entry.var.length === 1 ? "Variant" : "Variants"}
+                        </span>
+                        <div className="flex gap-2 flex-wrap">
+                          {entry.var.map((varChar, i) => (
+                            <div
+                              key={i}
+                              className="flex flex-col items-start gap-1 w-1/3 sm:w-1/4 opacity-60 hover:opacity-100 cursor-pointer transition-opacity"
+                              onClick={() => handleCharacterClick(varChar)}
+                            >
+                              <div className="w-full aspect-square">
+                                <CharacterWriter
+                                  character={varChar}
+                                  isLoop={false}
+                                  highlight={false}
+                                />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
                       </div>
-                    </div>
+                    )}
+
+                    {(!entry.var || entry.var.length === 0) && (
+                      <div className="invisible flex flex-col items-start gap-1 w-1/3 sm:w-1/4">
+                        <span className="text-xs">{"\u00A0"}</span>
+                        <div className="w-full aspect-square" />
+                      </div>
+                    )}
                   </div>
 
-                  <div className="flex flex-col gap-4 flex-1">
-                    {(entry?.sc || entry?.d) && (
-                      <Section label="General">
-                        {entry?.sc && <Row label="Strokes" value={entry.sc} />}
-                        {entry?.d && (
-                          <Row
-                            label="Definition"
-                            value={
-                              <ClickableCharacters
-                                text={entry.d}
-                                test={(char) => CJK_RE.test(char)}
-                                onCharacterClick={handleCharacterClick}
-                              />
-                            }
-                          />
-                        )}
-                      </Section>
-                    )}
+                  <div className="flex flex-col gap-4">
+                    {(entry.sc || (entry.r && entry.r.length > 0)) && (
+                      <div className="flex flex-col gap-8">
+                        <Section label="GENERAL" colCount={2}>
+                          <div>
+                            <div className="text-xs opacity-40">Strokes</div>
+                            <div className="text-sm">{entry.sc ?? "-"}</div>
+                          </div>
+                          <div>
+                            <div className="text-xs opacity-40">Mandarin</div>
+                            <div className="text-sm">
+                              {(() => {
+                                const readings = [
+                                  ...new Set(
+                                    entry.r!.map((reading) => reading.m),
+                                  ),
+                                ];
 
-                    {entry?.m && (
-                      <Section label="Pronunciation">
-                        <Row label="Pinyin" value={entry.m} />
-                        <Row label="Zhuyin" value={pinyinToZhuyin(entry.m)} />
-                      </Section>
-                    )}
+                                return readings.length > 0 ? (
+                                  readings.map((m, i) => (
+                                    <div key={i}>
+                                      {m} ({pinyinToZhuyin(m!)})
+                                    </div>
+                                  ))
+                                ) : (
+                                  <div>-</div>
+                                );
+                              })()}
+                            </div>
+                          </div>
+                        </Section>
 
-                    <CollapsibleSection label="Other languages">
-                      <Row label="Cantonese" value={entry?.c ?? "—"} />
-                      <Row
-                        label="Onyomi"
-                        value={
-                          entry?.on ? (
-                            <Readings
-                              value={entry.on}
-                              convert={(r) => toKatakana(r)}
-                            />
-                          ) : (
-                            "—"
-                          )
-                        }
-                      />
-                      <Row
-                        label="Kunyomi"
-                        value={
-                          entry?.kun ? (
-                            <Readings
-                              value={entry.kun}
-                              convert={(r) => toHiragana(r)}
-                            />
-                          ) : (
-                            "—"
-                          )
-                        }
-                      />
-                      <Row
-                        label="Hanja"
-                        value={
-                          entry?.k ? (
-                            <Readings
-                              value={entry.k}
-                              convert={(r) => hangulRomanization.convert(r)}
-                            />
-                          ) : (
-                            "—"
-                          )
-                        }
-                      />
-                      <Row label="Vietnamese" value={entry?.v ?? "—"} />
-                    </CollapsibleSection>
+                        <Section label="OTHER LANGUAGES" colCount={2}>
+                          <div>
+                            <div className="text-xs opacity-40">Cantonese</div>
+                            <div className="text-sm">{entry.c ?? "-"}</div>
+                          </div>
+                          <div>
+                            <div className="text-xs opacity-40">Hanja</div>
+                            <div className="text-sm">
+                              {entry.k
+                                ? `${entry.k} (${hangulRomanization.convert(entry.k)})`
+                                : "-"}
+                            </div>
+                          </div>
+                          <div>
+                            <div className="text-xs opacity-40">On'yomi</div>
+                            <div className="text-sm flex flex-col">
+                              {entry.on
+                                ? entry.on.split(" ").map((r, i) => (
+                                    <span key={i}>
+                                      {toKatakana(r)} ({r})
+                                    </span>
+                                  ))
+                                : "-"}
+                            </div>
+                          </div>
+                          <div>
+                            <div className="text-xs opacity-40">Kun'yomi</div>
+                            <div className="text-sm flex flex-col">
+                              {entry.kun
+                                ? entry.kun.split(" ").map((r, i) => (
+                                    <span key={i}>
+                                      {toHiragana(r)} ({r})
+                                    </span>
+                                  ))
+                                : "-"}
+                            </div>
+                          </div>
+                          <div>
+                            <div className="text-xs opacity-40">Han-Viet</div>
+                            <div className="text-sm">{entry.v ?? "-"}</div>
+                          </div>
+                        </Section>
+                      </div>
+                    )}
                   </div>
                 </div>
 
+                {entry.r && entry.r.length > 0 && (
+                  <Section label={entry.r.length > 1 ? "Meanings" : "Meaning"}>
+                    <div className="flex flex-col gap-2">
+                      {entry.r.map((reading, i) => (
+                        <div
+                          key={i}
+                          className="flex flex-col gap-2 p-3 border-2 border-foreground/10 rounded-sm"
+                        >
+                          {reading.m && (
+                            <div className="flex items-baseline gap-3">
+                              <span className="text-base font-medium">
+                                {reading.m}
+                              </span>
+                              <span className="text-sm">
+                                ({pinyinToZhuyin(reading.m)})
+                              </span>
+                            </div>
+                          )}
+
+                          {reading.d && reading.d.length > 0 && (
+                            <ol className="flex flex-col gap-1 list-none">
+                              {reading.d.map((def, j) => (
+                                <li key={j} className="text-sm">
+                                  {reading.d!.length > 1 && (
+                                    <span className="opacity-40 mr-1">
+                                      {j + 1}.
+                                    </span>
+                                  )}
+                                  <ClickableCharacters
+                                    text={def}
+                                    test={(char) => CJK_RE.test(char)}
+                                    onCharacterClick={handleCharacterClick}
+                                  />
+                                </li>
+                              ))}
+                            </ol>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </Section>
+                )}
+
                 {entry.cp && entry.cp.length > 0 && (
-                  <CollapsibleSection label="Compounds">
+                  <Section label="Compounds">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full">
                       {entry.cp.map(([word, pinyin, definition], index) => (
                         <div
@@ -276,7 +306,7 @@ export default function Home() {
                         </div>
                       ))}
                     </div>
-                  </CollapsibleSection>
+                  </Section>
                 )}
               </>
             ) : (

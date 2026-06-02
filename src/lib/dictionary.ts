@@ -1,9 +1,15 @@
+export type CharacterReading = {
+  /** Mandarin pinyin with diacritic tone marks. */
+  m?: string;
+  /** English definition. Cross-references use the format of `word [pinyin]`. */
+  d?: string[];
+};
+
 /**
  * A character entry from the dictionary
  */
 export type CharacterEntry = {
-  /** Mandarin pinyin with diacritic tone marks. */
-  m?: string;
+  r?: CharacterReading[];
   /** Cantonese Jyutping romanization. */
   c?: string;
   /** Japanese on'yomi in romaji, space-separated. */
@@ -14,14 +20,14 @@ export type CharacterEntry = {
   k?: string;
   /** Vietnamese Hán-Việt reading. */
   v?: string;
-  /** English definition. Cross-references use the format of `word [pinyin]`. */
-  d?: string;
+
   /** Total stroke count. */
   sc?: string;
-  /** Simplified Chinese variant of this character. Omitted when the character is script-neutral. */
-  s?: string;
-  /** Traditional Chinese variant of this character. Omitted when the character is script-neutral. */
-  t?: string;
+  /**
+   * Related variant forms of this character.
+   * Omitted when the character has no known variants.
+   */
+  var?: string[];
   /**
    * Common compounds containing this character, sourced from CC-CEDICT and filtered to HSK and TOCFL word lists.
    * Each tuple is `[word, pinyin, definition]` in the same script as the entry.

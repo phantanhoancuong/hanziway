@@ -2,6 +2,11 @@
 
 import { useState } from "react";
 
+const colClasses = {
+  1: "flex flex-col gap-1",
+  2: "grid grid-cols-1 sm:grid-cols-2 gap-1",
+} as const;
+
 /**
  * Display a labelled content block.
  *
@@ -11,15 +16,18 @@ import { useState } from "react";
 export const Section = ({
   label,
   children,
+  colCount = 1,
 }: {
   label: string;
   children: React.ReactNode;
+  colCount?: 1 | 2;
 }) => (
   <div className="flex flex-col gap-1">
     <span className="text-xs font-semibold opacity-40 uppercase tracking-wider">
       {label}
     </span>
-    <div className="flex flex-col gap-0.5">{children}</div>
+
+    <div className={colClasses[colCount]}>{children}</div>
   </div>
 );
 
@@ -47,7 +55,11 @@ export const CollapsibleSection = ({
         <span>{open ? "▼" : "▶"}</span>
         <span>{label}</span>
       </button>
-      {open && <div className="flex flex-col gap-0.5">{children}</div>}
+      {open && (
+        <div className="flex flex-col gap-1 sm:grid sm:grid-cols-2">
+          {children}
+        </div>
+      )}
     </div>
   );
 };
@@ -65,7 +77,8 @@ export const Row = ({
   label: string;
   value: React.ReactNode;
 }) => (
-  <p className="text-sm">
-    <span className="opacity-60">{label}</span> {value}
-  </p>
+  <div className="flex flex-col flex-base gap-0.5">
+    <span className="text-xs opacity-40">{label}</span>
+    <div className="text-sm">{value}</div>
+  </div>
 );
