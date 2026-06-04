@@ -79,7 +79,7 @@ export default function Home() {
         </Link>
       </header>
 
-      <main className="flex flex-col flex-1 gap-6 p-6 max-w-2xl mx-auto w-full">
+      <main className="flex flex-col flex-1 gap-6 p-6 max-w-3xl mx-auto w-full">
         <form className="flex gap-2" onSubmit={handleSubmit}>
           <input
             className="flex-1 p-2 border-2 border-foreground/20 rounded-sm bg-transparent focus:border-foreground/60 outline-none transition-colors"
@@ -161,7 +161,10 @@ export default function Home() {
                   <div className="flex flex-col gap-4">
                     {(entry.sc || (entry.r && entry.r.length > 0)) && (
                       <div className="flex flex-col gap-8">
-                        <Section label="GENERAL" colCount={2}>
+                        <Section
+                          label="GENERAL"
+                          className="grid-cols-1 sm:grid-cols-2"
+                        >
                           <div>
                             <div className="text-xs opacity-40">Strokes</div>
                             <div className="text-sm">{entry.sc ?? "-"}</div>
@@ -190,7 +193,10 @@ export default function Home() {
                           </div>
                         </Section>
 
-                        <Section label="OTHER LANGUAGES" colCount={2}>
+                        <Section
+                          label="OTHER LANGUAGES"
+                          className="grid-cols-1 sm:grid-cols-2"
+                        >
                           <div>
                             <div className="text-xs opacity-40">Cantonese</div>
                             <div className="text-sm">{entry.c ?? "-"}</div>
@@ -259,9 +265,12 @@ export default function Home() {
                           {reading.d && reading.d.length > 0 && (
                             <ol className="flex flex-col gap-1 list-none">
                               {reading.d.map((def, j) => (
-                                <li key={j} className="text-sm">
+                                <li
+                                  key={j}
+                                  className="text-sm sm:text-base flex gap-2"
+                                >
                                   {reading.d!.length > 1 && (
-                                    <span className="opacity-40 mr-1">
+                                    <span className="opacity-40 shrink-0 w-6 text-sm text-right font-mono">
                                       {j + 1}.
                                     </span>
                                   )}
@@ -281,14 +290,14 @@ export default function Home() {
                 )}
 
                 {entry.cp && entry.cp.length > 0 && (
-                  <Section label="Compounds">
+                  <Section label="COMPOUNDS">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full">
                       {entry.cp.map(([word, pinyin, definition], index) => (
                         <div
                           className="border-2 p-3 border-foreground/20 rounded-sm"
                           key={index}
                         >
-                          <div className="text-sm font-bold">
+                          <div className="text-xl font-bold">
                             <ClickableCharacters
                               text={word}
                               test={(char) => CJK_RE.test(char)}

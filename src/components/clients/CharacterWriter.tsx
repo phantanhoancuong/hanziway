@@ -4,14 +4,14 @@ import { useEffect, useRef, useState } from "react";
 import HanziWriter from "hanzi-writer";
 
 /**
- * Display and animate a Hanzi character.
+ * Display and animate a Chinese character.
  *
- * Sizes itself to 80% of its container width automatically.
- * Falls back to displaying the character as text if HanziWriter does not have stroke data for it.
+ * Size itself to 80% of its container width.
+ * Fall back to displaying the character as text if `HanziWriter` does not have stroke data for it.
  *
  * @param props.character - The Chinese character to display.
- * @param props.isLoop - Whether to loop the stroke animation. Defaults to true.
- * @param props.highlight - Whether to show a red border. Defaults to true.
+ * @param props.isLoop - Whether to loop the stroke animation. Default to `true`.
+ * @param props.highlight - Whether to show a red border. Default to `true`.
  */
 const CharacterWriter = ({
   character,
@@ -22,7 +22,7 @@ const CharacterWriter = ({
   isLoop?: boolean;
   highlight?: boolean;
 }) => {
-  // HanziWriter performs imperative DOM rendering outside React, so we have to use a direct element reference.
+  // `HanziWriter` performs imperative DOM rendering outside React, so we have to use a direct element reference.
   const targetDivRef = useRef<HTMLDivElement>(null);
   // The writer instance is mutable and must not trigger React re-renders so we use a ref.
   const hanziWriterRef = useRef<HanziWriter>(null);
@@ -56,7 +56,7 @@ const CharacterWriter = ({
         height: size,
         padding: 5,
         strokeColor: highlight ? "#ff0000" : "#ffffff",
-
+        showCharacter: false,
         onLoadCharDataError: () => setLoadFailed(true),
       },
     );

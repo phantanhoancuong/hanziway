@@ -1,15 +1,14 @@
 export type CharacterReading = {
   /** Mandarin pinyin with diacritic tone marks. */
-  m?: string;
+  m: string;
   /** English definition. Cross-references use the format of `word [pinyin]`. */
-  d?: string[];
+  d: string[];
 };
 
-/**
- * A character entry from the dictionary
- */
+/** A character entry from the dictionary. */
 export type CharacterEntry = {
-  r?: CharacterReading[];
+  /** List of readings (mandarin pronunciation and definition pairs) for the character. */
+  r: CharacterReading[];
   /** Cantonese Jyutping romanization. */
   c?: string;
   /** Japanese on'yomi in romaji, space-separated. */
@@ -42,7 +41,7 @@ let dictionary: Dictionary | null = null;
 /**
  * Fetch and cache the dictionary from `/dictionary.json`.
  *
- * Build the trad/simp reverse index on first load.
+ * @returns Promise resolving to the dictionary data.
  */
 const getDictionary = async (): Promise<Dictionary> => {
   if (dictionary) return dictionary;
