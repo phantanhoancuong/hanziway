@@ -12,7 +12,9 @@ import {
   ClickableCharacters,
   Section,
 } from "@/components/clients";
-import { CJK_RE, CharacterEntry, lookupCharacter } from "@/lib";
+import { Icon } from "@/components/server";
+import { CJK_RE, CharacterEntry, cn, lookupCharacter } from "@/lib";
+import { SearchIcon } from "@/assets";
 
 export default function Home() {
   const [inputText, setInputText] = useState<string>("");
@@ -66,45 +68,44 @@ export default function Home() {
   const characters = query ? [...query] : [];
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex min-h-screen flex-col">
       {/* Header */}
-      <header className="flex items-center justify-between h-20 px-6">
+      <header className="flex h-20 items-center justify-between px-6">
         <Link href="/" className="cursor-pointer">
           <div className="flex flex-col">
-            <span className="text-3xl font-bold tracking-tight text-red-500">
+            <span className="text-accent text-3xl font-bold tracking-tight">
               hanziway
             </span>
-            <span className="text-sm text-red-500">漢字道</span>
+            <span className="text-accent text-sm">漢字道</span>
           </div>
         </Link>
       </header>
 
-      <main className="flex flex-col flex-1 gap-6 p-6 max-w-2xl mx-auto w-full">
-        <form className="flex gap-2" onSubmit={handleSubmit}>
+      <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-2 p-6">
+        <form className="flex" onSubmit={handleSubmit}>
           <input
-            className="flex-1 p-2 border-2 border-foreground/20 rounded-sm bg-transparent focus:border-foreground/60 outline-none transition-colors"
+            className="bg-elevated border-border placeholder:text-foreground/40 text-foreground focus:border-accent hover:border-foreground/40 flex-1 cursor-text rounded-l-2xl border border-r-0 p-2 pl-4 transition-colors outline-none"
             type="text"
             value={inputText}
-            placeholder="Type or paste characters"
+            placeholder="Look up characters . . ."
             onChange={(e) => setInputText(e.target.value)}
           />
-          <button
-            className="px-4 border-2 border-foreground/20 rounded-sm cursor-pointer hover:border-foreground/60 transition-colors"
-            type="submit"
-          >
-            Search
+
+          <button className="bg-elevated border-border hover:bg-foreground/5 cursor-pointer rounded-r-2xl border px-4 transition-colors">
+            <Icon src={SearchIcon} />
           </button>
         </form>
 
         {characters.length > 0 && (
-          <div className="flex gap-2 flex-wrap">
+          <div className="flex flex-wrap gap-2">
             {characters.map((character, index) => (
               <button
-                className={`size-12 border-2 rounded-sm cursor-pointer text-xl transition-all ${
+                className={cn(
+                  "bg-elevated size-12 cursor-pointer rounded-sm border text-xl transition-all outline-none",
                   selectedIndex === index
-                    ? "border-red-500 text-red-500"
-                    : "border-foreground/20 opacity-40 hover:opacity-100"
-                }`}
+                    ? "border-accent text-accent cursor-default"
+                    : "border-border text-foreground/40 hover:text-foreground hover:border-foreground/40"
+                )}
                 key={index}
                 onClick={() => setSelectedIndex(index)}
               >
@@ -113,13 +114,12 @@ export default function Home() {
             ))}
           </div>
         )}
-
         {entry !== null && (
-          <div className="flex flex-col gap-6 w-full">
+          <div className="flex w-full flex-col gap-6 pt-10">
             {entry !== undefined ? (
               <>
                 <div
-                  className="grid gap-6 items-start"
+                  className="grid items-start gap-6"
                   style={{ gridTemplateColumns: "50% 50%" }}
                 >
                   <div className="flex flex-col gap-2">
@@ -127,33 +127,20 @@ export default function Home() {
 
                     {entry.var && entry.var.length > 0 && (
                       <div className="flex flex-col gap-1">
-                        <span className="text-xs font-semibold opacity-40 uppercase tracking-wider">
+                        <span className="text-foreground/40 text-xs font-semibold tracking-wider uppercase">
                           {entry.var.length === 1 ? "Variant" : "Variants"}
                         </span>
-                        <div className="flex gap-2 flex-wrap">
+                        <div className="flex flex-wrap gap-2">
                           {entry.var.map((varChar, i) => (
-                            <div
+                            <button
                               key={i}
-                              className="flex flex-col items-start gap-1 w-1/3 sm:w-1/4 opacity-60 hover:opacity-100 cursor-pointer transition-opacity"
+                              className="bg-elevated border-border text-foreground/40 hover:text-foreground hover:border-foreground/40 aspect-square w-1/3 cursor-pointer rounded-lg border text-4xl transition-all outline-none sm:w-1/4"
                               onClick={() => handleCharacterClick(varChar)}
                             >
-                              <div className="w-full aspect-square">
-                                <CharacterWriter
-                                  character={varChar}
-                                  isLoop={false}
-                                  highlight={false}
-                                />
-                              </div>
-                            </div>
+                              {varChar}
+                            </button>
                           ))}
                         </div>
-                      </div>
-                    )}
-
-                    {(!entry.var || entry.var.length === 0) && (
-                      <div className="invisible flex flex-col items-start gap-1 w-1/3 sm:w-1/4">
-                        <span className="text-xs">{"\u00A0"}</span>
-                        <div className="w-full aspect-square" />
                       </div>
                     )}
                   </div>
@@ -161,75 +148,87 @@ export default function Home() {
                   <div className="flex flex-col gap-4">
                     {(entry.sc || (entry.r && entry.r.length > 0)) && (
                       <div className="flex flex-col gap-8">
-                        <Section label="GENERAL" colCount={2}>
+                        <Section
+                          label="General"
+                          className="grid-cols-1 sm:grid-cols-2"
+                        >
                           <div>
-                            <div className="text-xs opacity-40">Strokes</div>
-                            <div className="text-sm">{entry.sc ?? "-"}</div>
+                            <div className="text-foreground/40 text-xs">
+                              Strokes
+                            </div>
+                            <div className="text-sm">{entry.sc ?? "—"}</div>
                           </div>
                           <div>
-                            <div className="text-xs opacity-40">Mandarin</div>
+                            <div className="text-foreground/40 text-xs">
+                              Mandarin
+                            </div>
                             <div className="text-sm">
-                              {(() => {
-                                const readings = [
-                                  ...new Set(
-                                    entry.r!.map((reading) => reading.m),
-                                  ),
-                                ];
-
-                                return readings.length > 0 ? (
-                                  readings.map((m, i) => (
-                                    <div key={i}>
-                                      {m} ({pinyinToZhuyin(m!)})
-                                    </div>
-                                  ))
-                                ) : (
-                                  <div>-</div>
-                                );
-                              })()}
+                              {[
+                                ...new Set(
+                                  entry.r!.filter((r) => r.m).map((r) => r.m)
+                                ),
+                              ].map((m, i) => (
+                                <div key={i}>
+                                  {m} ({pinyinToZhuyin(m!)})
+                                </div>
+                              ))}
                             </div>
                           </div>
                         </Section>
 
-                        <Section label="OTHER LANGUAGES" colCount={2}>
+                        <Section
+                          label="Other languages"
+                          className="grid-cols-1 sm:grid-cols-2"
+                        >
                           <div>
-                            <div className="text-xs opacity-40">Cantonese</div>
-                            <div className="text-sm">{entry.c ?? "-"}</div>
+                            <div className="text-foreground/40 text-xs">
+                              Cantonese
+                            </div>
+                            <div className="text-sm">{entry.c ?? "—"}</div>
                           </div>
                           <div>
-                            <div className="text-xs opacity-40">Hanja</div>
+                            <div className="text-foreground/40 text-xs">
+                              Hanja
+                            </div>
                             <div className="text-sm">
                               {entry.k
                                 ? `${entry.k} (${hangulRomanization.convert(entry.k)})`
-                                : "-"}
+                                : "—"}
                             </div>
                           </div>
                           <div>
-                            <div className="text-xs opacity-40">On'yomi</div>
-                            <div className="text-sm flex flex-col">
+                            <div className="text-foreground/40 text-xs">
+                              On'yomi
+                            </div>
+                            <div className="flex flex-col text-sm">
                               {entry.on
                                 ? entry.on.split(" ").map((r, i) => (
                                     <span key={i}>
                                       {toKatakana(r)} ({r})
                                     </span>
                                   ))
-                                : "-"}
+                                : "—"}
                             </div>
                           </div>
                           <div>
-                            <div className="text-xs opacity-40">Kun'yomi</div>
-                            <div className="text-sm flex flex-col">
+                            <div className="text-foreground/40 text-xs">
+                              Kun'yomi
+                            </div>
+                            <div className="flex flex-col text-sm">
                               {entry.kun
                                 ? entry.kun.split(" ").map((r, i) => (
                                     <span key={i}>
                                       {toHiragana(r)} ({r})
                                     </span>
                                   ))
-                                : "-"}
+                                : "—"}
                             </div>
                           </div>
                           <div>
-                            <div className="text-xs opacity-40">Han-Viet</div>
-                            <div className="text-sm">{entry.v ?? "-"}</div>
+                            <div className="text-foreground/40 text-xs">
+                              Hán Việt
+                            </div>
+                            <div className="text-sm">{entry.v ?? "—"}</div>
                           </div>
                         </Section>
                       </div>
@@ -243,25 +242,28 @@ export default function Home() {
                       {entry.r.map((reading, i) => (
                         <div
                           key={i}
-                          className="flex flex-col gap-2 p-3 border-2 border-foreground/10 rounded-sm"
+                          className="border-foreground/10 flex flex-col gap-2 rounded-sm border-2 p-3"
                         >
                           {reading.m && (
                             <div className="flex items-baseline gap-3">
                               <span className="text-base font-medium">
                                 {reading.m}
                               </span>
-                              <span className="text-sm">
+                              <span className="text-foreground/60 text-sm">
                                 ({pinyinToZhuyin(reading.m)})
                               </span>
                             </div>
                           )}
 
                           {reading.d && reading.d.length > 0 && (
-                            <ol className="flex flex-col gap-1 list-none">
+                            <ol className="flex list-none flex-col gap-1">
                               {reading.d.map((def, j) => (
-                                <li key={j} className="text-sm">
+                                <li
+                                  key={j}
+                                  className="flex gap-2 text-sm sm:text-base"
+                                >
                                   {reading.d!.length > 1 && (
-                                    <span className="opacity-40 mr-1">
+                                    <span className="w-6 shrink-0 text-right font-mono text-sm opacity-40">
                                       {j + 1}.
                                     </span>
                                   )}
@@ -282,20 +284,22 @@ export default function Home() {
 
                 {entry.cp && entry.cp.length > 0 && (
                   <Section label="Compounds">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full">
+                    <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-2">
                       {entry.cp.map(([word, pinyin, definition], index) => (
                         <div
-                          className="border-2 p-3 border-foreground/20 rounded-sm"
+                          className="border-foreground/20 rounded-sm border-2 p-3"
                           key={index}
                         >
-                          <div className="text-sm font-bold">
+                          <div className="text-xl font-bold">
                             <ClickableCharacters
                               text={word}
                               test={(char) => CJK_RE.test(char)}
                               onCharacterClick={handleCharacterClick}
                             />
                           </div>
-                          <div className="text-xs opacity-60">{pinyin}</div>
+                          <div className="text-foreground/60 text-xs">
+                            {pinyin}
+                          </div>
                           <div className="text-sm">
                             <ClickableCharacters
                               text={definition}
@@ -310,7 +314,7 @@ export default function Home() {
                 )}
               </>
             ) : (
-              <p className="text-sm opacity-40">No entry found</p>
+              <p className="text-foreground/40 text-sm">No entry found</p>
             )}
           </div>
         )}
