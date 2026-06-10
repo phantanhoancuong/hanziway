@@ -3,6 +3,8 @@ import { useEffect, useRef, useState } from "react";
 
 import HanziWriter from "hanzi-writer";
 
+import { cn } from "@/lib";
+
 /**
  * Display and animate a Chinese character.
  *
@@ -55,10 +57,10 @@ const CharacterWriter = ({
         width: size,
         height: size,
         padding: 5,
-        strokeColor: highlight ? "#ff0000" : "#ffffff",
-        showCharacter: false,
+        strokeColor: highlight ? "#ef4444" : "#0c0a09",
+        showCharacter: !highlight,
         onLoadCharDataError: () => setLoadFailed(true),
-      },
+      }
     );
 
     if (isLoop) hanziWriterRef.current.loopCharacterAnimation();
@@ -71,14 +73,63 @@ const CharacterWriter = ({
   return (
     <div
       ref={containerRef}
-      className={`w-full aspect-square flex items-center justify-center border-2 ${
-        highlight ? "border-red-500" : "border-foreground/20"
-      } ${size === 0 ? "invisible" : ""}`}
+      className={cn(
+        "relative flex aspect-square w-full items-center justify-center rounded-lg border-2",
+        highlight ? "border-accent" : "border-border",
+        size === 0 && "invisible"
+      )}
     >
+      {highlight && (
+        <svg
+          className="absolute inset-0 z-0 h-full w-full"
+          xmlns="http://www.w3.org/2000/svg"
+          aria-hidden="true"
+        >
+          <line
+            x1="0"
+            y1="50%"
+            x2="100%"
+            y2="50%"
+            stroke="var(--border)"
+            strokeWidth="1"
+            strokeDasharray="4 4"
+          />
+          <line
+            x1="50%"
+            y1="0"
+            x2="50%"
+            y2="100%"
+            stroke="var(--border)"
+            strokeWidth="1"
+            strokeDasharray="4 4"
+          />
+          <line
+            x1="0"
+            y1="0"
+            x2="100%"
+            y2="100%"
+            stroke="var(--border)"
+            strokeWidth="1"
+            strokeDasharray="4 4"
+          />
+          <line
+            x1="100%"
+            y1="0"
+            x2="0"
+            y2="100%"
+            stroke="var(--border)"
+            strokeWidth="1"
+            strokeDasharray="4 4"
+          />
+        </svg>
+      )}
+
       {loadFailed ? (
-        <span style={{ fontSize: size * 0.7 }}>{character}</span>
+        <span className="relative z-10" style={{ fontSize: size * 0.7 }}>
+          {character}
+        </span>
       ) : (
-        <div ref={targetDivRef} />
+        <div className="relative z-10" ref={targetDivRef} />
       )}
     </div>
   );

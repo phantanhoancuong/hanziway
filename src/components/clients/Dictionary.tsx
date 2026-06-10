@@ -18,7 +18,7 @@ export const Section = ({
   className?: string;
 }) => (
   <div className="flex flex-col gap-1">
-    <span className="text-xs font-semibold opacity-40 uppercase tracking-wider">
+    <span className="text-xs font-semibold tracking-wider uppercase opacity-40">
       {label}
     </span>
     <div className={cn("grid gap-1", className)}>{children}</div>
