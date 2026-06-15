@@ -32,6 +32,13 @@ export type CharacterEntry = {
    * Each tuple is `[word, pinyin, definition]` in the same script as the entry.
    */
   cp?: [string, string, string][];
+
+  /** Cangjie input code (e.g. `ETLO`). Omitted when unavailable. */
+  cj?: string;
+  /** HSK level if this character has an HSK compound. e.g. "hsk1" */
+  hsk?: string;
+  /** TOCFL level if this character has a TOCFL compound. e.g. "tocfl-l1" */
+  tocfl?: string;
 };
 
 type Dictionary = Record<string, CharacterEntry>;
@@ -57,7 +64,7 @@ const getDictionary = async (): Promise<Dictionary> => {
  * @returns The lookup result containing the key and character entry data, or `null` if not found.
  */
 export const lookupCharacter = async (
-  character: string,
+  character: string
 ): Promise<CharacterEntry | null> => {
   const dict = await getDictionary();
   return dict[character] ?? null;
