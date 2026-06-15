@@ -2,34 +2,33 @@ export type CangjieKey = {
   letter: string;
   radical: string;
   name: string;
-  nameChinese: string;
 };
 
 export const CANGJIE_KEYS: CangjieKey[] = [
-  { letter: "A", radical: "日", name: "Sun", nameChinese: "日" },
-  { letter: "B", radical: "月", name: "Moon", nameChinese: "月" },
-  { letter: "C", radical: "金", name: "Gold", nameChinese: "金" },
-  { letter: "D", radical: "木", name: "Wood", nameChinese: "木" },
-  { letter: "E", radical: "水", name: "Water", nameChinese: "水" },
-  { letter: "F", radical: "火", name: "Fire", nameChinese: "火" },
-  { letter: "G", radical: "土", name: "Earth", nameChinese: "土" },
-  { letter: "H", radical: "竹", name: "Bamboo", nameChinese: "竹" },
-  { letter: "I", radical: "戈", name: "Spear", nameChinese: "戈" },
-  { letter: "J", radical: "十", name: "Ten", nameChinese: "十" },
-  { letter: "K", radical: "大", name: "Big", nameChinese: "大" },
-  { letter: "L", radical: "中", name: "Middle", nameChinese: "中" },
-  { letter: "M", radical: "一", name: "One", nameChinese: "一" },
-  { letter: "N", radical: "弓", name: "Bow", nameChinese: "弓" },
-  { letter: "O", radical: "人", name: "Person", nameChinese: "人" },
-  { letter: "P", radical: "心", name: "Heart", nameChinese: "心" },
-  { letter: "Q", radical: "手", name: "Hand", nameChinese: "手" },
-  { letter: "R", radical: "口", name: "Mouth", nameChinese: "口" },
-  { letter: "S", radical: "尸", name: "Body", nameChinese: "尸" },
-  { letter: "T", radical: "廿", name: "Twenty", nameChinese: "廿" },
-  { letter: "U", radical: "山", name: "Mountain", nameChinese: "山" },
-  { letter: "V", radical: "女", name: "Woman", nameChinese: "女" },
-  { letter: "W", radical: "田", name: "Field", nameChinese: "田" },
-  { letter: "Y", radical: "卜", name: "Divination", nameChinese: "卜" },
+  { letter: "A", radical: "日", name: "Sun" },
+  { letter: "B", radical: "月", name: "Moon" },
+  { letter: "C", radical: "金", name: "Gold" },
+  { letter: "D", radical: "木", name: "Wood" },
+  { letter: "E", radical: "水", name: "Water" },
+  { letter: "F", radical: "火", name: "Fire" },
+  { letter: "G", radical: "土", name: "Earth" },
+  { letter: "H", radical: "竹", name: "Bamboo" },
+  { letter: "I", radical: "戈", name: "Spear" },
+  { letter: "J", radical: "十", name: "Ten" },
+  { letter: "K", radical: "大", name: "Big" },
+  { letter: "L", radical: "中", name: "Middle" },
+  { letter: "M", radical: "一", name: "One" },
+  { letter: "N", radical: "弓", name: "Bow" },
+  { letter: "O", radical: "人", name: "Person" },
+  { letter: "P", radical: "心", name: "Heart" },
+  { letter: "Q", radical: "手", name: "Hand" },
+  { letter: "R", radical: "口", name: "Mouth" },
+  { letter: "S", radical: "尸", name: "Body" },
+  { letter: "T", radical: "廿", name: "Twenty" },
+  { letter: "U", radical: "山", name: "Mountain" },
+  { letter: "V", radical: "女", name: "Woman" },
+  { letter: "W", radical: "田", name: "Field" },
+  { letter: "Y", radical: "卜", name: "Divination" },
 ];
 
 export const LETTER_TO_KEY = new Map<string, CangjieKey>(

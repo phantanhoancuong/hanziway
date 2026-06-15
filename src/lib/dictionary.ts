@@ -35,10 +35,10 @@ export type CharacterEntry = {
 
   /** Cangjie input code (e.g. `ETLO`). Omitted when unavailable. */
   cj?: string;
-  /** HSK level if this character has an HSK compound. e.g. "hsk1" */
-  hsk?: string;
-  /** TOCFL level if this character has a TOCFL compound. e.g. "tocfl-l1" */
-  tocfl?: string;
+  /** HSK level (1–9). Omitted when none. */
+  hsk?: number;
+  /** TOCFL level (1–6). Omitted when none. */
+  tocfl?: number;
 };
 
 type Dictionary = Record<string, CharacterEntry>;
