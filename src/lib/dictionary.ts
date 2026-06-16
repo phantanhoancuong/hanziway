@@ -35,7 +35,7 @@ export type CharacterEntry = {
 
   /** Cangjie input code (e.g. `ETLO`). Omitted when unavailable. */
   cj?: string;
-  /** HSK level (1–9). Omitted when none. */
+  /** HSK level (1–7, where 7 means HSK 7-9). Omitted when none. */
   hsk?: number;
   /** TOCFL level (1–6). Omitted when none. */
   tocfl?: number;
@@ -68,6 +68,31 @@ export const lookupCharacter = async (
 ): Promise<CharacterEntry | null> => {
   const dict = await getDictionary();
   return dict[character] ?? null;
+};
+
+/**
+ * Get all characters matching the given HSK and TOCFL levels.
+ *
+ * @param hskLevels - HSK levels to include (1-9).
+ * @param tocflLevels - TOCFL levels to include (1-6).
+ * @returns Array of mathcing character entries with their characters.
+ */
+export const getCharactersByLevel = async (
+  hskLevels: number[],
+  tocflLevels: number[]
+): Promise<{ char: string; entry: CharacterEntry }[]> => {
+  const dict = await getDictionary();
+  const hskSet = new Set(hskLevels);
+  const tocflSet = new Set(tocflLevels);
+
+  return Object.entries(dict)
+    .filter(
+      ([, entry]) =>
+        entry.cj !== undefined &&
+        ((entry.hsk !== undefined && hskSet.has(entry.hsk)) ||
+          (entry.tocfl !== undefined && tocflSet.has(entry.tocfl)))
+    )
+    .map(([char, entry]) => ({ char, entry }));
 };
 
 /**
