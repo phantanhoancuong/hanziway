@@ -45,10 +45,13 @@ const PracticePanel = ({
           </div>
         </div>
 
-        <div className="flex flex-2 flex-col items-center gap-1">
+        <div className="items-left flex flex-1 flex-col gap-1">
           <ol className="flex list-none flex-col gap-1">
             {current.definition.slice(0, 3).map((def, j) => (
-              <li key={j} className="flex gap-2 text-sm sm:text-base">
+              <li
+                key={j}
+                className="flex items-baseline gap-2 text-sm sm:text-base"
+              >
                 <span className="w-6 shrink-0 text-right font-mono text-sm opacity-40">
                   {j + 1}.
                 </span>
