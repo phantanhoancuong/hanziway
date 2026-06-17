@@ -28,28 +28,40 @@ const PracticePanel = ({
   const [inputShake, setInputShake] = useState<boolean>(false);
   const [inputText, setInputText] = useState<string>("");
   const inputRef = useRef<HTMLInputElement>(null);
-
   const [index, setIndex] = useState<number>(0);
+
+  const current = session[index];
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="border-foreground/10 flex min-h-64 w-full flex-col items-center justify-center gap-4 rounded-sm border-2 p-6">
-        <span className="text-8xl leading-none font-light">
-          {session[index].char}
-        </span>
-
-        <div className="flex flex-col items-center gap-1">
-          <div className="flex items-baseline gap-3">
-            <span className="text-base font-medium">
-              {session[index].pinyin}
-            </span>
+      <div className="border-foreground/10 flex min-h-64 w-full items-center justify-center gap-4 rounded-sm border-2 p-6">
+        <div className="flex flex-1 flex-col items-center">
+          <div className="text-7xl leading-none font-light">{current.char}</div>
+          <div className="flex flex-col items-center">
+            <span className="text-base font-medium">{current.pinyin}</span>
             <span className="text-foreground/60 text-sm">
-              ({pinyinToZhuyin(session[index].pinyin)})
+              ({pinyinToZhuyin(current.pinyin)})
             </span>
           </div>
-          <div className="text-foreground/60 text-sm">
-            {session[index].definition}
-          </div>
+        </div>
+
+        <div className="flex flex-2 flex-col items-center gap-1">
+          <ol className="flex list-none flex-col gap-1">
+            {current.definition.slice(0, 3).map((def, j) => (
+              <li key={j} className="flex gap-2 text-sm sm:text-base">
+                <span className="w-6 shrink-0 text-right font-mono text-sm opacity-40">
+                  {j + 1}.
+                </span>
+                <div>{def}</div>
+              </li>
+            ))}
+            {current.definition.length > 3 && (
+              <li className="flex gap-2 text-sm sm:text-base">
+                <span className="w-6 shrink-0 text-right font-mono text-sm opacity-40" />
+                <div>. . .</div>
+              </li>
+            )}
+          </ol>
         </div>
       </div>
 
@@ -61,7 +73,7 @@ const PracticePanel = ({
         onSubmit={(e) => {
           e.preventDefault();
           if (inputShake) return;
-          if (inputText.trim().length == 0) {
+          if (inputText.trim().length === 0) {
             setInputShake(true);
             setTimeout(() => setInputShake(false), 500);
             return;
@@ -80,7 +92,7 @@ const PracticePanel = ({
           className="bg-elevated border-border placeholder:text-foreground/40 text-foreground focus:border-accent hover:border-foreground/40 w-full min-w-50 flex-1 cursor-text rounded-l-2xl border border-r-0 p-2 pl-4 transition-colors outline-none"
           value={inputText}
           placeholder="Type Cangjie . . ."
-          autoFocus={true}
+          autoFocus
           onChange={(e) => setInputText(e.target.value.toUpperCase())}
           ref={inputRef}
         />

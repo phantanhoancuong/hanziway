@@ -4,11 +4,15 @@ import { useState } from "react";
 
 import { getCharactersByLevel } from "@/lib";
 
-import { LevelSelector, PracticePanel } from "@/components/clients";
+import {
+  LevelSelector,
+  PracticePanel,
+  ResultPanel,
+} from "@/components/clients";
 
 import { PracticeChar } from "@/types";
 
-const SESSION_SIZE = 20;
+const SESSION_SIZE = 5;
 
 /**
  * Return a new array containing a random subset of `arr`, shuffled.
@@ -65,7 +69,7 @@ export default function PracticePage() {
         char: character.char,
         cj: character.entry.cj!,
         pinyin: character.entry.r[0].m,
-        definition: character.entry.r[0].d.join("; "),
+        definition: character.entry.r[0].d,
       }))
     );
 
@@ -94,7 +98,7 @@ export default function PracticePage() {
           onComplete={() => setPhase("result")}
         />
       )}
-      {phase === "result" && <></>}
+      {phase === "result" && <ResultPanel session={session} />}
     </main>
   );
 }

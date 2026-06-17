@@ -3,6 +3,6 @@ export type PracticeChar = {
   char: string;
   cj: string;
   pinyin: string;
-  definition: string;
+  definition: string[];
   typed?: string;
 };
