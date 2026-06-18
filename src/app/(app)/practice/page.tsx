@@ -64,13 +64,20 @@ export default function PracticePage() {
   ): Promise<void> => {
     const allCharacters = await getCharactersByLevel(hskLevels, tocflLevels);
     const characters = shuffle(allCharacters, SESSION_SIZE);
+
     setSession(
-      characters.map((character) => ({
-        char: character.char,
-        cj: character.entry.cj!,
-        pinyin: character.entry.r[0].m,
-        definition: character.entry.r[0].d,
-      }))
+      characters.map((character) => {
+        const bestReading = [...character.entry.r].sort(
+          (a, b) => b.d.length - a.d.length
+        )[0];
+
+        return {
+          char: character.char,
+          cj: character.entry.cj!,
+          pinyin: bestReading.m,
+          definition: bestReading.d,
+        };
+      })
     );
 
     setPhase("practice");
