@@ -28,6 +28,7 @@ export const CANGJIE_KEYS: CangjieKey[] = [
   { letter: "U", radical: "山", name: "Mountain" },
   { letter: "V", radical: "女", name: "Woman" },
   { letter: "W", radical: "田", name: "Field" },
+  { letter: "X", radical: "難", name: "Difficult" },
   { letter: "Y", radical: "卜", name: "Divination" },
 ];
 

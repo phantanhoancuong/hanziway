@@ -12,7 +12,7 @@ import {
 
 import { PracticeChar } from "@/types";
 
-const SESSION_SIZE = 5;
+import { SESSION_SIZE } from "@/constants";
 
 /**
  * Return a new array containing a random subset of `arr`, shuffled.
@@ -96,16 +96,28 @@ export default function PracticePage() {
   };
 
   return (
-    <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-8 p-6">
-      {phase === "select" && <LevelSelector onStart={handleStart} />}
-      {phase === "practice" && (
-        <PracticePanel
-          session={session}
-          onSubmit={handleSubmit}
-          onComplete={() => setPhase("result")}
-        />
+    <div className="flex h-full flex-col">
+      {phase === "select" && (
+        <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-8 p-6">
+          <LevelSelector onStart={handleStart} />
+        </div>
       )}
-      {phase === "result" && <ResultPanel session={session} />}
-    </main>
+
+      {phase === "practice" && (
+        <div className="p mx-auto flex min-h-0 w-full max-w-3xl flex-1 flex-col overflow-hidden">
+          <PracticePanel
+            session={session}
+            onSubmit={handleSubmit}
+            onComplete={() => setPhase("result")}
+          />
+        </div>
+      )}
+
+      {phase === "result" && (
+        <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-8 p-6">
+          <ResultPanel session={session} />
+        </div>
+      )}
+    </div>
   );
 }
