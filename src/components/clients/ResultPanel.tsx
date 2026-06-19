@@ -4,7 +4,15 @@ import { pinyinToZhuyin } from "pinyin-zhuyin";
 
 import { PracticeChar } from "@/types";
 
-const ResultPanel = ({ session }: { session: PracticeChar[] }) => {
+const ResultPanel = ({
+  session,
+  onRetry,
+  onRetryMissed,
+}: {
+  session: PracticeChar[];
+  onRetry: () => void;
+  onRetryMissed: () => void;
+}) => {
   const missedCount =
     session.length -
     session.filter((character) => character.typed === character.cj).length;
@@ -54,11 +62,17 @@ const ResultPanel = ({ session }: { session: PracticeChar[] }) => {
       </div>
 
       <div className="flex gap-4">
-        <button className="bg-elevated border-border hover:bg-foreground/5 hover:border-accent hover:text-accent h-12 flex-1 cursor-pointer rounded-sm border px-4 transition-all">
+        <button
+          className="bg-elevated border-border hover:bg-foreground/5 hover:border-accent hover:text-accent h-12 flex-1 cursor-pointer rounded-sm border px-4 transition-all"
+          onClick={onRetry}
+        >
           Retry
         </button>
         {missedCount > 0 && (
-          <button className="bg-elevated border-border hover:bg-foreground/5 hover:border-accent hover:text-accent h-12 flex-1 cursor-pointer rounded-sm border px-4 transition-all">
+          <button
+            className="bg-elevated border-border hover:bg-foreground/5 hover:border-accent hover:text-accent h-12 flex-1 cursor-pointer rounded-sm border px-4 transition-all"
+            onClick={onRetryMissed}
+          >
             Retry Missed ({missedCount})
           </button>
         )}

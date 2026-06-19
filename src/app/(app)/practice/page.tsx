@@ -95,6 +95,18 @@ export default function PracticePage() {
     );
   };
 
+  const handleRetryMissed = () => {
+    const missed = session.filter(
+      (character) => character.cj !== character.typed
+    );
+    if (missed.length === 0) return;
+
+    setSession(
+      shuffle(missed.map((character) => ({ ...character, typed: "" })))
+    );
+    setPhase("practice");
+  };
+
   return (
     <div className="flex h-full flex-col">
       {phase === "select" && (
@@ -115,7 +127,11 @@ export default function PracticePage() {
 
       {phase === "result" && (
         <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-8 p-6">
-          <ResultPanel session={session} />
+          <ResultPanel
+            session={session}
+            onRetry={() => setPhase("select")}
+            onRetryMissed={handleRetryMissed}
+          />
         </div>
       )}
     </div>

@@ -54,9 +54,10 @@ const LevelSelector = ({
 
   return (
     <div className="flex flex-col gap-8">
-      <h1 className="text-foreground/40 self-center text-lg font-semibold tracking-wider uppercase">
-        Cangjie Practice
-      </h1>
+      <div className="text-foreground/40 flex flex-col items-center self-center text-lg font-semibold tracking-wider uppercase">
+        <div>Cangjie Practice </div>
+        <div>(Work In Progress)</div>
+      </div>
 
       <div className="flex flex-col gap-4">
         <div className="flex flex-col gap-2">
