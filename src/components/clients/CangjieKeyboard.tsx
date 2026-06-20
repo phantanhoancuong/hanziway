@@ -37,9 +37,11 @@ const CangjieKeyboard = ({
                 onClick={() => onKey(letter)}
                 onMouseDown={(e) => e.preventDefault()}
               >
-                <div className="flex flex-col">
-                  <div className="flex-1">{key!.letter}</div>
-                  <div className="flex-1">{key!.radical}</div>
+                <div className="flex flex-col items-center justify-center">
+                  <div className="flex-2">{key!.letter}</div>
+                  <div className="text-foreground/40 flex flex-1 items-center text-lg">
+                    {key!.radical}
+                  </div>
                 </div>
               </button>
             );
@@ -64,8 +66,10 @@ const CangjieKeyboard = ({
               onMouseDown={(e) => e.preventDefault()}
             >
               <div className="flex flex-col">
-                <div className="flex-1">{key!.letter}</div>
-                <div className="flex-1">{key!.radical}</div>
+                <div className="flex-1 text-xl">{key!.letter}</div>
+                <div className="text-foreground/40 flex-1 text-lg">
+                  {key!.radical}
+                </div>
               </div>
             </button>
           );

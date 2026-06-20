@@ -110,15 +110,21 @@ const PracticePanel = ({
             inputShake && "animate-shake"
           )}
         >
-          {Array.from({ length: 5 }).map((_, index) => (
-            <div
-              className="border-border flex aspect-3/2 w-[20%] flex-col items-center justify-between border-2 p-4 text-lg text-nowrap"
-              key={index}
-            >
-              <span>{inputText[index]}</span>
-              <span>{LETTER_TO_KEY.get(inputText[index])?.radical}</span>
-            </div>
-          ))}
+          <div className="flex w-full max-w-xl gap-2">
+            {Array.from({ length: 5 }).map((_, index) => (
+              <div
+                className="border-border flex min-h-16 w-[20%] flex-col items-center justify-center border-2 p-2 text-nowrap"
+                key={index}
+              >
+                <span className="flex flex-2 items-center text-sm">
+                  {inputText[index]}
+                </span>
+                <span className="text-foreground/40 flex flex-1 items-center text-xs">
+                  {LETTER_TO_KEY.get(inputText[index])?.radical}
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
