@@ -89,9 +89,11 @@ export default function PracticePage() {
    * @param index - Position of the character within `session`.
    * @param typed - The text the user submitted for this character.
    */
-  const handleSubmit = (index: number, typed: string) => {
+  const handleSubmit = (sessionIndex: number, typed: string) => {
     setSession((prev) =>
-      prev.map((c, i): PracticeChar => (i === index ? { ...c, typed } : c))
+      prev.map(
+        (c, i): PracticeChar => (i === sessionIndex ? { ...c, typed } : c)
+      )
     );
   };
 
