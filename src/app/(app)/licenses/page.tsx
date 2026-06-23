@@ -28,8 +28,8 @@ export default function LicensesPage() {
             >
               Unicode License v3
             </a>{" "}
-            (SPDX: Unicode-3.0). The data is provided "as is", without warranty
-            of any kind.
+            (SPDX: Unicode-3.0). Unicode, Inc. provides the data "as is",
+            without warranty of any kind.
           </p>
         </div>
 
