@@ -146,7 +146,7 @@ export default function PracticePage() {
       )}
 
       {phase === "result" && (
-        <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-8 p-6">
+        <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-8 p-6">
           <ResultPanel
             session={session}
             onRetry={() => setPhase("select")}
