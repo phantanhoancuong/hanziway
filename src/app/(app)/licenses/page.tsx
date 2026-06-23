@@ -3,7 +3,7 @@ export default function LicensesPage() {
     <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-2 p-6 text-justify">
       <div className="flex flex-col gap-2">
         <h1 className="text-2xl font-bold">Licenses &amp; Credits</h1>
-        <p className="text-foreground/60 text-base">
+        <p className="text-foreground/60 text-sm">
           The dictionary for hanziway incorporates data from the projects listed
           below. License notices and attribution information are provided in
           accordance with their respective terms.
