@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef } from "react";
 
 import { cn } from "@/lib";
 
@@ -26,31 +26,22 @@ const TOCFL_LEVELS = [
 /**
  * Let the user pick one or more HSK / TOCFL levels and start a practice session.
  *
+ * @param selectedLevels - Currently selected level ids, e.g. `"hsk:3"` or `"tocfl:2"`.
+ * @param onToggle - Called with a level id when its button is clicked.
  * @param onStart - Called with the selected HSK and TOCFL level numbers when the user clicks Start.
  */
 const LevelSelector = ({
+  selectedLevels,
   onStart,
+  onToggle,
 }: {
+  selectedLevels: Set<string>;
   onStart: (hskLevels: number[], tocflLevels: number[]) => Promise<void>;
+  onToggle: (id: string) => void;
 }) => {
-  const [selected, setSelected] = useState<Set<string>>(new Set());
-
-  /**
-   * Add `id` to `selected` if absent, remove it if present.
-   *
-   * @param id - Level `id` to toggle.
-   */
-  const toggle = (id: string): void => {
-    setSelected((prev) => {
-      const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
-      return next;
-    });
-  };
-
   /** Hold the most recent non-zero selection count. So the Start button's label doesn't read "0 levels selected" while it's fading out. */
   const lastSelectedSize = useRef(0);
-  if (selected.size > 0) lastSelectedSize.current = selected.size;
+  if (selectedLevels.size > 0) lastSelectedSize.current = selectedLevels.size;
 
   return (
     <div className="flex flex-col gap-8">
@@ -72,12 +63,12 @@ const LevelSelector = ({
                   className={cn(
                     "bg-elevated h-12 cursor-pointer rounded-sm border text-sm transition-all outline-none",
                     level.n === 7 && "col-span-3",
-                    selected.has(id)
+                    selectedLevels.has(id)
                       ? "border-accent text-accent"
                       : "border-border text-foreground/40 hover:text-foreground hover:border-foreground/40"
                   )}
                   key={id}
-                  onClick={() => toggle(id)}
+                  onClick={() => onToggle(id)}
                 >
                   {level.label}
                 </button>
@@ -97,12 +88,12 @@ const LevelSelector = ({
                 <button
                   className={cn(
                     "bg-elevated h-12 cursor-pointer rounded-sm border text-sm transition-all outline-none",
-                    selected.has(id)
+                    selectedLevels.has(id)
                       ? "border-accent text-accent"
                       : "border-border text-foreground/40 hover:text-foreground hover:border-foreground/40"
                   )}
                   key={id}
-                  onClick={() => toggle(id)}
+                  onClick={() => onToggle(id)}
                 >
                   {level.label}
                 </button>
@@ -115,10 +106,12 @@ const LevelSelector = ({
       <button
         className={cn(
           "bg-elevated border-border hover:bg-foreground/5 hover:border-accent hover:text-accent h-12 cursor-pointer rounded-sm border px-4 transition-all",
-          selected.size > 0 ? "opacity-100" : "pointer-events-none opacity-0"
+          selectedLevels.size > 0
+            ? "opacity-100"
+            : "pointer-events-none opacity-0"
         )}
         onClick={() => {
-          const levels = [...selected];
+          const levels = [...selectedLevels];
           const hskLevels = levels
             .filter((level) => level.startsWith("hsk:"))
             .map((level) => parseInt(level.slice(4)));

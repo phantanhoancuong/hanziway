@@ -42,10 +42,24 @@ const shuffle = <T,>(arr: T[], n?: number): T[] => {
  * - "result": session is complete (UI not yet implemented).
  */
 export default function PracticePage() {
+  const [selectedLevels, setSelectedLevels] = useState<Set<string>>(new Set());
   const [phase, setPhase] = useState<"select" | "practice" | "result">(
     "select"
   );
   const [session, setSession] = useState<PracticeChar[]>([]);
+
+  /**
+   * Add `id` to `selectedLevels` if absent, remove it if present.
+   *
+   * @param id - Level `id` to toggle.
+   */
+  const toggleLevel = (id: string): void => {
+    setSelectedLevels((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
 
   /**
    * Build a new practice session from the selected levels and start it.
@@ -86,12 +100,14 @@ export default function PracticePage() {
   /**
    * Record the result of a single character submission into `session`.
    *
-   * @param index - Position of the character within `session`.
+   * @param sessionIndex - Position of the character within `session`.
    * @param typed - The text the user submitted for this character.
    */
-  const handleSubmit = (index: number, typed: string) => {
+  const handleSubmit = (sessionIndex: number, typed: string) => {
     setSession((prev) =>
-      prev.map((c, i): PracticeChar => (i === index ? { ...c, typed } : c))
+      prev.map(
+        (c, i): PracticeChar => (i === sessionIndex ? { ...c, typed } : c)
+      )
     );
   };
 
@@ -111,7 +127,11 @@ export default function PracticePage() {
     <div className="flex h-full flex-col">
       {phase === "select" && (
         <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-8 p-6">
-          <LevelSelector onStart={handleStart} />
+          <LevelSelector
+            selectedLevels={selectedLevels}
+            onStart={handleStart}
+            onToggle={toggleLevel}
+          />
         </div>
       )}
 

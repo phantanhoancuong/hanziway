@@ -67,7 +67,7 @@ export default function Home() {
   const characters = query ? [...query] : [];
 
   return (
-    <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-2 p-6">
+    <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-2 p-6">
       <form className="flex" onSubmit={handleSubmit}>
         <input
           className="bg-elevated border-border placeholder:text-foreground/40 text-foreground focus:border-accent hover:border-foreground/40 flex-1 cursor-text rounded-l-2xl border border-r-0 p-2 pl-4 transition-colors outline-none"
@@ -304,6 +304,6 @@ export default function Home() {
           )}
         </div>
       )}
-    </main>
+    </div>
   );
 }

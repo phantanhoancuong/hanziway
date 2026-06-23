@@ -1,14 +1,16 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { pinyinToZhuyin } from "pinyin-zhuyin";
 
-import { cn } from "@/lib";
+import { LETTER_TO_KEY, cn } from "@/lib";
+
+import { MAX_CANGJIE_LENGTH } from "@/constants";
+
+import { CangjieKeyboard } from "@/components/clients";
 
 import { PracticeChar } from "@/types";
-import CangjieKeyboard from "./CangjieKeyboard";
-import { LETTER_TO_KEY } from "@/lib/cangjie";
 
 /**
  * Render one character at a time from `session` and collect the user's typed Cangjie input for it.
@@ -24,47 +26,69 @@ const PracticePanel = ({
   onComplete,
 }: {
   session: PracticeChar[];
-  onSubmit: (index: number, typed: string) => void;
+  onSubmit: (sessionIndex: number, typed: string) => void;
   onComplete: () => void;
 }) => {
   const [inputShake, setInputShake] = useState<boolean>(false);
   const [inputText, setInputText] = useState<string>("");
-  const [index, setIndex] = useState<number>(0);
-  const current = session[index];
+  const [sessionIndex, setSessionIndex] = useState<number>(0);
+  const current = session[sessionIndex];
 
-  const shakeInput = () => {
+  /** Trigger the input slots' shake animation to signal invalid input. */
+  const shakeInput = (): void => {
     if (inputShake) return;
     setInputShake(true);
     setTimeout(() => setInputShake(false), 500);
   };
 
-  const handleBackspace = () => {
+  /** Remove the last typed letter, or shake the input if it's already empty. */
+  const handleBackspace = (): void => {
     if (inputText.length === 0) return shakeInput();
     setInputText((prev) => prev.slice(0, -1));
   };
 
-  const handleEnter = () => {
+  /**
+   * Submit the current input as the answer for the active character.
+   * Advance to the next character or call `onComplete()` if it's the last one.
+   * Shake the input if nothing has been typed yet.
+   */
+  const handleEnter = (): void => {
     if (inputText.length === 0) return shakeInput();
-    onSubmit(index, inputText);
-    if (index + 1 >= session.length) return onComplete();
-    setIndex((prev) => prev + 1);
+    onSubmit(sessionIndex, inputText);
+    if (sessionIndex + 1 >= session.length) return onComplete();
+    setSessionIndex((prev) => prev + 1);
     setInputText("");
   };
 
-  useEffect(() => {
-    const handleInput = (e: KeyboardEvent) => {
-      const character = e.key.toUpperCase();
-      if (character === "BACKSPACE") return handleBackspace();
-      if (character === "ENTER") return handleEnter();
-      if (character.length !== 1) return;
-      if (!LETTER_TO_KEY.has(character)) return shakeInput();
-      if (inputText.length >= 5) return shakeInput();
+  /**
+   * Append a capitalized letter to the current input.
+   * Shake the input if the letter isn't a valid Cangjie key or the slots are full.
+   *
+   * @param char - The letter to append.
+   */
+  const handleChar = (char: string): void => {
+    const normChar = char.toUpperCase();
+    if (!LETTER_TO_KEY.has(normChar)) return shakeInput();
+    if (inputText.length >= MAX_CANGJIE_LENGTH) return shakeInput();
+    setInputText((prev) => prev + normChar);
+  };
 
-      setInputText((prev) => prev + character);
+  useEffect(() => {
+    /**
+     * Route the keydown event to the matching handler.
+     *
+     * @param e - The keyboard event.
+     */
+    const onKeyDown = (e: KeyboardEvent): void => {
+      const key = e.key.toUpperCase();
+      if (key === "BACKSPACE") return handleBackspace();
+      if (key === "ENTER") return handleEnter();
+      if (key.length !== 1) return;
+      handleChar(key);
     };
-    window.addEventListener("keydown", handleInput);
-    return () => window.removeEventListener("keydown", handleInput);
-  }, [inputText]);
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [inputText, sessionIndex, session]);
 
   return (
     <div className="flex flex-1 flex-col gap-4">
@@ -110,23 +134,27 @@ const PracticePanel = ({
             inputShake && "animate-shake"
           )}
         >
-          {Array.from({ length: 5 }).map((_, index) => (
-            <div
-              className="border-border flex aspect-3/2 w-[20%] flex-col items-center justify-between border-2 p-4 text-lg text-nowrap"
-              key={index}
-            >
-              <span>{inputText[index]}</span>
-              <span>{LETTER_TO_KEY.get(inputText[index])?.radical}</span>
-            </div>
-          ))}
+          <div className="flex w-full max-w-xl gap-2">
+            {Array.from({ length: MAX_CANGJIE_LENGTH }).map((_, index) => (
+              <div
+                className="border-border flex min-h-16 w-[20%] flex-col items-center justify-center border-2 p-2 text-nowrap"
+                key={index}
+              >
+                <span className="flex flex-2 items-center text-sm">
+                  {inputText[index]}
+                </span>
+                <span className="text-foreground/40 flex flex-1 items-center text-xs">
+                  {LETTER_TO_KEY.get(inputText[index])?.radical}
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
       <div className="flex h-[30%] flex-col justify-end p-2 md:justify-center lg:px-6">
         <CangjieKeyboard
-          onKey={(letter: string) => {
-            setInputText((prev) => prev + letter);
-          }}
+          onChar={handleChar}
           onBack={handleBackspace}
           onEnter={handleEnter}
         />
