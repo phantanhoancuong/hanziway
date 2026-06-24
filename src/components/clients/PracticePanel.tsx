@@ -93,7 +93,7 @@ const PracticePanel = ({
   return (
     <div className="flex flex-1 flex-col gap-4">
       <div className="flex h-[70%] flex-col justify-center gap-4 p-2 lg:px-6">
-        <div className="border-foreground/10 flex max-h-64 min-h-64 w-full items-center justify-center gap-4 overflow-hidden rounded-sm border-2 sm:p-6">
+        <div className="border-foreground/10 flex max-h-64 min-h-64 w-full items-center justify-center gap-4 overflow-hidden rounded-sm border-2 p-2 sm:p-6">
           <div className="flex w-[30%] shrink-0 flex-col items-center">
             <div className="text-7xl leading-none font-light">
               {current.char}
