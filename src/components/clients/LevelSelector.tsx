@@ -24,19 +24,32 @@ const TOCFL_LEVELS = [
 ];
 
 /**
- * Let the user pick one or more HSK / TOCFL levels and start a practice session.
+ * Let the user pick a session size, one or more HSK / TOCFL levels, and start a practice session.
  *
+ * @param selectedSessionSize - Currently selected session size, one of `sessionSizeOptions`.
+ * @param onSelectSessionSize - Called with a session size when one of the size buttons is clicked.
+ * @param sessionSizeOptions - The session sizes offered as buttons.
  * @param selectedLevels - Currently selected level ids, e.g. `"hsk:3"` or `"tocfl:2"`.
  * @param onToggle - Called with a level id when its button is clicked.
- * @param onStart - Called with the selected HSK and TOCFL level numbers when the user clicks Start.
+ * @param onStart - Called with the selected HSK and TOCFL level numbers and the selected session size when the user clicks Start.
  */
 const LevelSelector = ({
+  selectedSessionSize,
+  onSelectSessionSize,
+  sessionSizeOptions,
   selectedLevels,
   onStart,
   onToggle,
 }: {
+  selectedSessionSize: number;
+  onSelectSessionSize: (sessionSize: number) => void;
+  sessionSizeOptions: number[];
   selectedLevels: Set<string>;
-  onStart: (hskLevels: number[], tocflLevels: number[]) => Promise<void>;
+  onStart: (
+    hskLevels: number[],
+    tocflLevels: number[],
+    sessionSize: number
+  ) => Promise<void>;
   onToggle: (id: string) => void;
 }) => {
   /** Hold the most recent non-zero selection count. So the Start button's label doesn't read "0 levels selected" while it's fading out. */
@@ -51,6 +64,27 @@ const LevelSelector = ({
       </div>
 
       <div className="flex flex-col gap-4">
+        <span className="text-foreground/40 text-sm font-semibold tracking-wider uppercase">
+          Session size
+          <br />
+          (how many characters per practice)
+        </span>
+        <div className="flex gap-2">
+          {sessionSizeOptions.map((option, index) => (
+            <button
+              className={cn(
+                "bg-elevated h-12 flex-1 cursor-pointer rounded-sm border text-sm transition-all outline-none",
+                selectedSessionSize === option
+                  ? "border-accent text-accent"
+                  : "border-border text-foreground/40 hover:text-foreground hover:border-foreground/40"
+              )}
+              key={index}
+              onClick={() => onSelectSessionSize(option)}
+            >
+              {option}
+            </button>
+          ))}
+        </div>
         <div className="flex flex-col gap-2">
           <span className="text-foreground/40 text-sm font-semibold tracking-wider uppercase">
             HSK
@@ -118,7 +152,7 @@ const LevelSelector = ({
           const tocflLevels = levels
             .filter((level) => level.startsWith("tocfl:"))
             .map((level) => parseInt(level.slice(6)));
-          onStart(hskLevels, tocflLevels);
+          onStart(hskLevels, tocflLevels, selectedSessionSize);
         }}
       >
         Start — {lastSelectedSize.current} level
