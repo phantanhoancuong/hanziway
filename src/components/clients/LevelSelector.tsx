@@ -63,76 +63,93 @@ const LevelSelector = ({
         <div>(Work In Progress)</div>
       </div>
 
-      <div className="flex flex-col gap-4">
-        <span className="text-foreground/40 text-sm font-semibold tracking-wider uppercase">
-          Session size
-          <br />
-          (how many characters per practice)
+      <div className="flex flex-col gap-3">
+        <span className="text-foreground/70 text-base font-bold tracking-wider uppercase">
+          Settings
         </span>
-        <div className="flex gap-2">
-          {sessionSizeOptions.map((option, index) => (
-            <button
-              className={cn(
-                "bg-elevated h-12 flex-1 cursor-pointer rounded-sm border text-sm transition-all outline-none",
-                selectedSessionSize === option
-                  ? "border-accent text-accent"
-                  : "border-border text-foreground/40 hover:text-foreground hover:border-foreground/40"
-              )}
-              key={index}
-              onClick={() => onSelectSessionSize(option)}
-            >
-              {option}
-            </button>
-          ))}
-        </div>
-        <div className="flex flex-col gap-2">
-          <span className="text-foreground/40 text-sm font-semibold tracking-wider uppercase">
-            HSK
-          </span>
-          <div className="grid grid-cols-3 gap-2">
-            {HSK_LEVELS.map((level) => {
-              const id = `hsk:${level.n}`;
-              return (
-                <button
-                  className={cn(
-                    "bg-elevated h-12 cursor-pointer rounded-sm border text-sm transition-all outline-none",
-                    level.n === 7 && "col-span-3",
-                    selectedLevels.has(id)
-                      ? "border-accent text-accent"
-                      : "border-border text-foreground/40 hover:text-foreground hover:border-foreground/40"
-                  )}
-                  key={id}
-                  onClick={() => onToggle(id)}
-                >
-                  {level.label}
-                </button>
-              );
-            })}
-          </div>
-        </div>
 
         <div className="flex flex-col gap-2">
           <span className="text-foreground/40 text-sm font-semibold tracking-wider uppercase">
-            TOCFL
+            Session size
+            <br />
+            (how many characters per practice)
           </span>
-          <div className="grid grid-cols-2 gap-2">
-            {TOCFL_LEVELS.map((level) => {
-              const id = `tocfl:${level.n}`;
-              return (
-                <button
-                  className={cn(
-                    "bg-elevated h-12 cursor-pointer rounded-sm border text-sm transition-all outline-none",
-                    selectedLevels.has(id)
-                      ? "border-accent text-accent"
-                      : "border-border text-foreground/40 hover:text-foreground hover:border-foreground/40"
-                  )}
-                  key={id}
-                  onClick={() => onToggle(id)}
-                >
-                  {level.label}
-                </button>
-              );
-            })}
+          <div className="flex gap-2">
+            {sessionSizeOptions.map((option, index) => (
+              <button
+                className={cn(
+                  "bg-elevated h-12 flex-1 cursor-pointer rounded-sm border text-sm transition-all outline-none",
+                  selectedSessionSize === option
+                    ? "border-accent text-accent"
+                    : "border-border text-foreground/40 hover:text-foreground hover:border-foreground/40"
+                )}
+                key={index}
+                onClick={() => onSelectSessionSize(option)}
+              >
+                {option}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="border-border border-t" />
+
+      <div className="flex flex-col gap-3">
+        <span className="text-foreground/70 text-base font-bold tracking-wider uppercase">
+          Levels
+        </span>
+
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-2">
+            <span className="text-foreground/40 text-sm font-semibold tracking-wider uppercase">
+              HSK
+            </span>
+            <div className="grid grid-cols-3 gap-2">
+              {HSK_LEVELS.map((level) => {
+                const id = `hsk:${level.n}`;
+                return (
+                  <button
+                    className={cn(
+                      "bg-elevated h-12 cursor-pointer rounded-sm border text-sm transition-all outline-none",
+                      level.n === 7 && "col-span-3",
+                      selectedLevels.has(id)
+                        ? "border-accent text-accent"
+                        : "border-border text-foreground/40 hover:text-foreground hover:border-foreground/40"
+                    )}
+                    key={id}
+                    onClick={() => onToggle(id)}
+                  >
+                    {level.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <span className="text-foreground/40 text-sm font-semibold tracking-wider uppercase">
+              TOCFL
+            </span>
+            <div className="grid grid-cols-2 gap-2">
+              {TOCFL_LEVELS.map((level) => {
+                const id = `tocfl:${level.n}`;
+                return (
+                  <button
+                    className={cn(
+                      "bg-elevated h-12 cursor-pointer rounded-sm border text-sm transition-all outline-none",
+                      selectedLevels.has(id)
+                        ? "border-accent text-accent"
+                        : "border-border text-foreground/40 hover:text-foreground hover:border-foreground/40"
+                    )}
+                    key={id}
+                    onClick={() => onToggle(id)}
+                  >
+                    {level.label}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
       </div>
