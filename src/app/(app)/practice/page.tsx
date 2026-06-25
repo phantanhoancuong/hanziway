@@ -12,7 +12,7 @@ import {
 
 import { PracticeChar } from "@/types";
 
-import { SESSION_SIZE } from "@/constants";
+import { SESSION_SIZE_OPTIONS } from "@/constants";
 
 /**
  * Return a new array containing a random subset of `arr`, shuffled.
@@ -47,6 +47,9 @@ export default function PracticePage() {
     "select"
   );
   const [session, setSession] = useState<PracticeChar[]>([]);
+  const [sessionSize, setSessionSize] = useState<number>(
+    SESSION_SIZE_OPTIONS[3]
+  );
 
   /**
    * Add `id` to `selectedLevels` if absent, remove it if present.
@@ -64,20 +67,22 @@ export default function PracticePage() {
   /**
    * Build a new practice session from the selected levels and start it.
    *
-   * Fetch the character pool for the given levels, shuffle, and trim it. to `SESSION_SIZE`.
+   * Fetch the character pool for the given levels, shuffle, and trim it to `requestedSessionSize`.
    *
    * Map each entry into `PracticeChar` and advance `phase` to "practice".
    *
    * @param hskLevels - Selected HSK level numbers (1 to 7).
    * @param tocflLevels - Selected TOCFL level numbers (1 to 6).
+   * @param requestedSessionSize - Number of characters to include in the session, as chosen in `LevelSelector`.
    * @returns A promise that resolves once `session` and `phase` are updated.
    */
   const handleStart = async (
     hskLevels: number[],
-    tocflLevels: number[]
+    tocflLevels: number[],
+    requestedSessionSize: number
   ): Promise<void> => {
     const allCharacters = await getCharactersByLevel(hskLevels, tocflLevels);
-    const characters = shuffle(allCharacters, SESSION_SIZE);
+    const characters = shuffle(allCharacters, requestedSessionSize);
 
     setSession(
       characters.map((character) => {
@@ -128,6 +133,9 @@ export default function PracticePage() {
       {phase === "select" && (
         <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-8 p-6">
           <LevelSelector
+            selectedSessionSize={sessionSize}
+            onSelectSessionSize={(option: number) => setSessionSize(option)}
+            sessionSizeOptions={SESSION_SIZE_OPTIONS}
             selectedLevels={selectedLevels}
             onStart={handleStart}
             onToggle={toggleLevel}
