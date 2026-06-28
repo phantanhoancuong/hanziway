@@ -145,7 +145,7 @@ const PracticePanel = ({
       <div className="flex h-[30%] flex-col justify-end p-2 md:justify-center lg:px-6">
         <button className="text-foreground/40 border-border bg-elevated hover:bg-foreground/5 m-1.5 mr-0 cursor-pointer self-end border-2 px-1.5 py-0.5 pr-0">
           <span className="flex items-center gap-1">
-            Key References
+            Key References (WIP)
             <Icon src={HelpCenterIcon} />
           </span>
         </button>
