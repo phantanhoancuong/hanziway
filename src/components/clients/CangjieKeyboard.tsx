@@ -1,6 +1,6 @@
 "use client";
 
-import { LetterKey } from "@/components/clients";
+import { ControlKey, LetterKey } from "@/components/clients";
 
 const ROWS = [
   ["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"],
@@ -34,23 +34,11 @@ const CangjieKeyboard = ({
         </div>
       ))}
       <div className="flex w-full justify-center gap-1">
-        <button
-          className="border-border bg-elevated hover:bg-foreground/5 flex-2 cursor-pointer border-2"
-          onClick={onBack}
-          onMouseDown={(e) => e.preventDefault()}
-        >
-          Back
-        </button>
+        <ControlKey label="Back" onClick={onBack} />
         {BOTTOM_LETTERS.map((letter) => (
           <LetterKey key={letter} letter={letter} onChar={onChar} />
         ))}
-        <button
-          className="border-border bg-elevated hover:bg-foreground/5 flex-2 cursor-pointer border-2"
-          onClick={onEnter}
-          onMouseDown={(e) => e.preventDefault()}
-        >
-          Enter
-        </button>
+        <ControlKey label="Enter" onClick={onEnter} />
       </div>
     </div>
   );
