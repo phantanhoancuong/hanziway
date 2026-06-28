@@ -69,6 +69,34 @@ export default function LicensesPage() {
             No warranty is provided.
           </p>
         </div>
+
+        <div className="border-foreground/10 flex flex-col gap-2 rounded-sm border-2 p-4">
+          <h3 className="text-foreground/40 text-base font-semibold tracking-wider uppercase">
+            Cangjie Reference
+          </h3>
+          <p className="text-sm">
+            Cangjie key descriptions and character decomposition examples are
+            adapted from{" "}
+            <a
+              href="https://zh.wikibooks.org/zh-tw/%E5%80%89%E9%A0%A1%E8%BC%B8%E5%85%A5%E6%B3%95/%E8%BC%94%E5%8A%A9%E5%AD%97%E5%BD%A2"
+              className="text-accent underline underline-offset-2"
+            >
+              倉頡輸入法/輔助字形 (Cangjie Input Method/Auxiliary Glyphs)
+            </a>
+            , a Chinese Wikibooks article, copyright © its contributors.
+          </p>
+          <p className="text-foreground/60 text-sm">
+            Text from this source is licensed under the{" "}
+            <a
+              href="https://creativecommons.org/licenses/by-sa/4.0/"
+              className="text-accent underline underline-offset-2"
+            >
+              Creative Commons Attribution-ShareAlike 4.0 International License
+            </a>
+            . The content has been adapted and reformatted for use within
+            hanziway. No warranty is provided.
+          </p>
+        </div>
       </div>
     </div>
   );
