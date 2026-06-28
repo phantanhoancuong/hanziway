@@ -7,8 +7,8 @@ export default function manifest(): MetadataRoute.Manifest {
     description: "Chinese character dictionary and input method practice.",
     start_url: "/",
     display: "standalone",
-    background_color: "#0c0a09",
-    theme_color: "#fb2c36",
+    background_color: "#fb2c36",
+    theme_color: "#0c0a09",
     icons: [
       {
         src: "/icons/icon-192.png",
