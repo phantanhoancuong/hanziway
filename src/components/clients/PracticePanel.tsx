@@ -24,12 +24,16 @@ import { HelpCenterIcon } from "@/assets";
  */
 const PracticePanel = ({
   session,
+  isReferenceOpen,
   onSubmit,
   onComplete,
+  onToggleReferenceOpen,
 }: {
   session: PracticeChar[];
+  isReferenceOpen: boolean;
   onSubmit: (sessionIndex: number, typed: string) => void;
   onComplete: () => void;
+  onToggleReferenceOpen: () => void;
 }) => {
   const [inputShake, setInputShake] = useState<boolean>(false);
   const [inputText, setInputText] = useState<string>("");
@@ -76,6 +80,7 @@ const PracticePanel = ({
   };
 
   useEffect(() => {
+    if (isReferenceOpen) return;
     /**
      * Route the keydown event to the matching handler.
      *
@@ -143,9 +148,12 @@ const PracticePanel = ({
       </div>
 
       <div className="flex h-[30%] flex-col justify-end p-2 md:justify-center lg:px-6">
-        <button className="text-foreground/40 border-border bg-elevated hover:bg-foreground/5 m-1.5 mr-0 cursor-pointer self-end border-2 px-1.5 py-0.5 pr-0">
+        <button
+          className="text-foreground/40 border-border bg-elevated hover:bg-foreground/5 m-1.5 mr-0 cursor-pointer self-end border-2 px-1.5 py-0.5 pr-0"
+          onClick={onToggleReferenceOpen}
+        >
           <span className="flex items-center gap-1">
-            Key References (WIP)
+            Key References
             <Icon src={HelpCenterIcon} />
           </span>
         </button>
