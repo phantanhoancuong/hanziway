@@ -1,9 +1,11 @@
 {
   "name": "hanziway",
-  "version": "0.7.5",
+  "version": "0.8.0",
   "private": true,
   "scripts": {
+    "predev": "node scripts/generate-icon-index.mjs src/assets/auxiliary_glyphs && node scripts/generate-icon-index.mjs src/assets/auxiliary_glyphs",
     "dev": "next dev",
+    "prebuild": "node scripts/generate-icon-index.mjs src/assets/auxiliary_glyphs && node scripts/generate-icon-index.mjs src/assets/auxiliary_glyphs",
     "build": "next build",
     "start": "next start",
     "lint": "eslint"

@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 
-import { getCharactersByLevel } from "@/lib";
+import { cn, getCharactersByLevel } from "@/lib";
 
 import {
+  CangjieReferencePanel,
   LevelSelector,
   PracticePanel,
   ResultPanel,
@@ -50,6 +51,7 @@ export default function PracticePage() {
   const [sessionSize, setSessionSize] = useState<number>(
     SESSION_SIZE_OPTIONS[3]
   );
+  const [isReferenceOpen, setIsReferenceOpen] = useState<boolean>(false);
 
   /**
    * Add `id` to `selectedLevels` if absent, remove it if present.
@@ -129,7 +131,7 @@ export default function PracticePage() {
   };
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full gap-8">
       {phase === "select" && (
         <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-8 p-6">
           <LevelSelector
@@ -144,12 +146,25 @@ export default function PracticePage() {
       )}
 
       {phase === "practice" && (
-        <div className="p mx-auto flex min-h-0 w-full max-w-3xl flex-1 flex-col overflow-hidden">
+        <div
+          className={cn(
+            "p mx-auto flex min-h-0 w-full max-w-3xl flex-3 flex-col overflow-hidden",
+            isReferenceOpen && "hidden lg:flex"
+          )}
+        >
           <PracticePanel
             session={session}
+            isReferenceOpen={isReferenceOpen}
             onSubmit={handleSubmit}
             onComplete={() => setPhase("result")}
+            onToggleReferenceOpen={() => setIsReferenceOpen((prev) => !prev)}
           />
+        </div>
+      )}
+
+      {phase === "practice" && isReferenceOpen && (
+        <div className="p mx-auto flex min-h-0 w-full max-w-3xl flex-1 flex-col overflow-y-auto">
+          <CangjieReferencePanel onClose={() => setIsReferenceOpen(false)} />
         </div>
       )}
 

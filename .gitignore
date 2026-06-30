@@ -40,3 +40,6 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 public/dictionary-formatted.json
+
+# glyphs barrel file
+src/assets/auxiliary_glyphs/index.ts
