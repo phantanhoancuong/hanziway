@@ -8,7 +8,7 @@ import { glyphTree } from "@/lib/auxiliary-glyphs";
 const CangjieReferencePanel = ({ onClose }: { onClose: () => void }) => {
   return (
     <div className="flex flex-1 flex-col gap-2 px-4 pb-10">
-      <div className="bg-background sticky top-0 z-10 flex items-center justify-between pt-[5%] pb-2 lg:pt-[10%]">
+      <div className="bg-background sticky top-0 z-10 flex items-center justify-between pt-6 pb-2 lg:pt-10">
         <h1 className="text-lg font-medium">Key References</h1>
         <button
           className="text-foreground/40 border-border bg-elevated hover:bg-foreground/5 cursor-pointer rounded-sm border-2 px-2 py-1 text-sm"
@@ -26,7 +26,10 @@ const CangjieReferencePanel = ({ onClose }: { onClose: () => void }) => {
             </span>
             <div className="flex flex-wrap gap-1.5">
               {Object.entries(groups).map(([group, svgs], i, arr) => (
-                <div key={group} className="flex items-center gap-1.5">
+                <div
+                  key={group}
+                  className="flex flex-wrap items-center gap-1.5"
+                >
                   {svgs.map((src, index) =>
                     src ? (
                       <div
