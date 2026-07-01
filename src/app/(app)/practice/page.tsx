@@ -146,26 +146,36 @@ export default function PracticePage() {
       )}
 
       {phase === "practice" && (
-        <div
-          className={cn(
-            "p mx-auto flex min-h-0 w-full max-w-3xl flex-3 flex-col overflow-hidden",
-            isReferenceOpen && "hidden lg:flex"
-          )}
-        >
-          <PracticePanel
-            session={session}
-            isReferenceOpen={isReferenceOpen}
-            onSubmit={handleSubmit}
-            onComplete={() => setPhase("result")}
-            onToggleReferenceOpen={() => setIsReferenceOpen((prev) => !prev)}
-          />
-        </div>
-      )}
-
-      {phase === "practice" && isReferenceOpen && (
-        <div className="p mx-auto flex min-h-0 w-full max-w-3xl flex-1 flex-col overflow-y-auto">
-          <CangjieReferencePanel onClose={() => setIsReferenceOpen(false)} />
-        </div>
+        <>
+          <div
+            className={cn(
+              "mx-auto flex min-h-0 w-full max-w-3xl flex-1 flex-col overflow-hidden transition-all duration-300",
+              isReferenceOpen && "hidden lg:flex"
+            )}
+          >
+            <PracticePanel
+              session={session}
+              isReferenceOpen={isReferenceOpen}
+              onSubmit={handleSubmit}
+              onComplete={() => setPhase("result")}
+              onToggleReferenceOpen={() => setIsReferenceOpen((prev) => !prev)}
+            />
+          </div>
+          <div
+            className={cn(
+              "min-h-0 flex-col overflow-hidden lg:transition-all lg:duration-300",
+              isReferenceOpen
+                ? "flex w-full lg:w-1/2 lg:translate-x-0 lg:opacity-100"
+                : "pointer-events-none hidden lg:flex lg:w-0 lg:translate-x-full lg:opacity-0"
+            )}
+          >
+            <div className="h-full overflow-y-auto">
+              <CangjieReferencePanel
+                onClose={() => setIsReferenceOpen(false)}
+              />
+            </div>
+          </div>
+        </>
       )}
 
       {phase === "result" && (
