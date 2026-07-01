@@ -26,7 +26,10 @@ const CangjieReferencePanel = ({ onClose }: { onClose: () => void }) => {
             </span>
             <div className="flex flex-wrap gap-1.5">
               {Object.entries(groups).map(([group, svgs], i, arr) => (
-                <div key={group} className="flex items-center gap-1.5">
+                <div
+                  key={group}
+                  className="flex flex-wrap items-center gap-1.5"
+                >
                   {svgs.map((src, index) =>
                     src ? (
                       <div

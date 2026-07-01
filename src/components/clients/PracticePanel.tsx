@@ -95,12 +95,12 @@ const PracticePanel = ({
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [inputText, sessionIndex, session]);
+  }, [inputText, sessionIndex, session, isReferenceOpen]);
 
   return (
-    <div className="flex flex-1 flex-col gap-4">
-      <div className="flex h-[70%] flex-col justify-center gap-4 p-2 lg:px-6">
-        <div className="border-foreground/10 flex max-h-64 min-h-64 w-full items-center justify-center gap-4 overflow-hidden rounded-sm border-2 p-2 sm:p-6">
+    <div className="flex min-h-0 flex-1 flex-col gap-4">
+      <div className="flex min-h-0 flex-1 flex-col justify-center gap-4 overflow-hidden p-2 lg:px-6">
+        <div className="border-foreground/10 flex max-h-64 min-h-0 w-full items-center justify-center gap-4 overflow-hidden rounded-sm border-2 p-2 sm:p-6">
           <div className="flex w-[30%] shrink-0 flex-col items-center">
             <div className="text-7xl leading-none font-light">
               {current.char}
@@ -147,7 +147,7 @@ const PracticePanel = ({
         </div>
       </div>
 
-      <div className="flex h-[30%] flex-col justify-end p-2 md:justify-center lg:px-6">
+      <div className="flex shrink-0 flex-col justify-center gap-1 p-2 lg:px-6">
         <button
           className="text-foreground/40 border-border bg-elevated hover:bg-foreground/5 m-1.5 mr-0 cursor-pointer self-end border-2 px-1.5 py-0.5 pr-0"
           onClick={onToggleReferenceOpen}
