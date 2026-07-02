@@ -40,7 +40,7 @@ const shuffle = <T,>(arr: T[], n?: number): T[] => {
  * Orchestrate three phases:
  * - "select": the user picks the HSK / TOCFL levels through `LevelSelector`.
  * - "practice": the user works through the generated `session` through `PracticePanel`.
- * - "result": session is complete (UI not yet implemented).
+ * - "result": the user views their results and can retry missed characters or just a new session.
  */
 export default function PracticePage() {
   const [selectedLevels, setSelectedLevels] = useState<Set<string>>(new Set());
@@ -51,6 +51,7 @@ export default function PracticePage() {
   const [sessionSize, setSessionSize] = useState<number>(
     SESSION_SIZE_OPTIONS[3]
   );
+  const [sessionIndex, setSessionIndex] = useState<number>(0);
   const [isReferenceOpen, setIsReferenceOpen] = useState<boolean>(false);
 
   /**
@@ -85,7 +86,7 @@ export default function PracticePage() {
   ): Promise<void> => {
     const allCharacters = await getCharactersByLevel(hskLevels, tocflLevels);
     const characters = shuffle(allCharacters, requestedSessionSize);
-
+    setSessionIndex(0);
     setSession(
       characters.map((character) => {
         const bestReading = [...character.entry.r].sort(
@@ -107,23 +108,31 @@ export default function PracticePage() {
   /**
    * Record the result of a single character submission into `session`.
    *
-   * @param sessionIndex - Position of the character within `session`.
+   * Also conditionally advance to the next character or to the result phase if it's the last character.
+   *
    * @param typed - The text the user submitted for this character.
    */
-  const handleSubmit = (sessionIndex: number, typed: string) => {
+  const handleSubmit = (typed: string): void => {
     setSession((prev) =>
       prev.map(
         (c, i): PracticeChar => (i === sessionIndex ? { ...c, typed } : c)
       )
     );
+    if (sessionIndex + 1 >= session.length) return setPhase("result");
+    setSessionIndex((prev) => prev + 1);
   };
 
-  const handleRetryMissed = () => {
+  /**
+   * Restart the practice phase with only the characters the user missed (also shuffled).
+   *
+   * Does nothing if every character was answered correctly.
+   */
+  const handleRetryMissed = (): void => {
     const missed = session.filter(
       (character) => character.cj !== character.typed
     );
     if (missed.length === 0) return;
-
+    setSessionIndex(0);
     setSession(
       shuffle(missed.map((character) => ({ ...character, typed: "" })))
     );
@@ -145,38 +154,43 @@ export default function PracticePage() {
         </div>
       )}
 
-      {phase === "practice" && (
-        <>
-          <div
-            className={cn(
-              "mx-auto flex min-h-0 w-full max-w-3xl flex-1 flex-col overflow-hidden transition-all duration-300",
-              isReferenceOpen && "hidden lg:flex"
-            )}
-          >
-            <PracticePanel
-              session={session}
-              isReferenceOpen={isReferenceOpen}
-              onSubmit={handleSubmit}
-              onComplete={() => setPhase("result")}
-              onToggleReferenceOpen={() => setIsReferenceOpen((prev) => !prev)}
-            />
-          </div>
-          <div
-            className={cn(
-              "min-h-0 flex-col overflow-hidden lg:transition-all lg:duration-300",
-              isReferenceOpen
-                ? "flex w-full lg:w-1/2 lg:translate-x-0 lg:opacity-100"
-                : "pointer-events-none hidden lg:flex lg:w-0 lg:translate-x-full lg:opacity-0"
-            )}
-          >
-            <div className="h-full overflow-y-auto">
-              <CangjieReferencePanel
-                onClose={() => setIsReferenceOpen(false)}
-              />
-            </div>
-          </div>
-        </>
-      )}
+      {phase === "practice" &&
+        (() => {
+          const currentChar: PracticeChar = session[sessionIndex];
+          return (
+            <>
+              <div
+                className={cn(
+                  "mx-auto flex min-h-0 w-full max-w-3xl flex-1 flex-col overflow-hidden transition-all duration-300",
+                  isReferenceOpen && "hidden lg:flex"
+                )}
+              >
+                <PracticePanel
+                  isReferenceOpen={isReferenceOpen}
+                  currentChar={currentChar}
+                  onSubmit={handleSubmit}
+                  onToggleReferenceOpen={() =>
+                    setIsReferenceOpen((prev) => !prev)
+                  }
+                />
+              </div>
+              <div
+                className={cn(
+                  "min-h-0 flex-col overflow-hidden lg:transition-all lg:duration-300",
+                  isReferenceOpen
+                    ? "flex w-full lg:w-1/2 lg:translate-x-0 lg:opacity-100"
+                    : "pointer-events-none hidden lg:flex lg:w-0 lg:translate-x-full lg:opacity-0"
+                )}
+              >
+                <div className="h-full overflow-y-auto">
+                  <CangjieReferencePanel
+                    onClose={() => setIsReferenceOpen(false)}
+                  />
+                </div>
+              </div>
+            </>
+          );
+        })()}
 
       {phase === "result" && (
         <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-8 p-6">
