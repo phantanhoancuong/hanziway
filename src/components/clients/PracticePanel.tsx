@@ -9,36 +9,34 @@ import { LETTER_TO_KEY, cn } from "@/lib";
 import { MAX_CANGJIE_LENGTH } from "@/constants";
 
 import { CangjieKeyboard } from "@/components/clients";
+import { Icon } from "@/components/server";
 
 import { PracticeChar } from "@/types";
-import { Icon } from "../server";
+
 import { HelpCenterIcon } from "@/assets";
 
 /**
- * Render one character at a time from `session` and collect the user's typed Cangjie input for it.
+ * Render the current character and collect the user's typed Cangjie input for it.
  *
- * @param session - Ordered list of characters to practice.
- * @param onSubmit - Called once per character with the result of the submission.
- * @param onComplete - Called once after the last character has been submitted.
+ * @param isReferenceOpen - Whether the reference panel is currently open.
+ * @param currentChar - The current character in the practice session.
+ * @param onSubmit - Called with the typed input when the user submits an answer to record the result.
+ * @param onToggleReferenceOpen - Called to open or close the reference panel.
  * @returns
  */
 const PracticePanel = ({
-  session,
+  currentChar,
   isReferenceOpen,
   onSubmit,
-  onComplete,
   onToggleReferenceOpen,
 }: {
-  session: PracticeChar[];
+  currentChar: PracticeChar;
   isReferenceOpen: boolean;
-  onSubmit: (sessionIndex: number, typed: string) => void;
-  onComplete: () => void;
+  onSubmit: (typed: string) => void;
   onToggleReferenceOpen: () => void;
 }) => {
   const [inputShake, setInputShake] = useState<boolean>(false);
   const [inputText, setInputText] = useState<string>("");
-  const [sessionIndex, setSessionIndex] = useState<number>(0);
-  const current = session[sessionIndex];
 
   /** Trigger the input slots' shake animation to signal invalid input. */
   const shakeInput = (): void => {
@@ -54,20 +52,19 @@ const PracticePanel = ({
   };
 
   /**
-   * Submit the current input as the answer for the active character.
-   * Advance to the next character or call `onComplete()` if it's the last one.
+   * Submit the current input and clear the input slots.
+   *
    * Shake the input if nothing has been typed yet.
    */
   const handleEnter = (): void => {
     if (inputText.length === 0) return shakeInput();
-    onSubmit(sessionIndex, inputText);
-    if (sessionIndex + 1 >= session.length) return onComplete();
-    setSessionIndex((prev) => prev + 1);
+    onSubmit(inputText);
     setInputText("");
   };
 
   /**
    * Append a capitalized letter to the current input.
+   *
    * Shake the input if the letter isn't a valid Cangjie key or the slots are full.
    *
    * @param char - The letter to append.
@@ -95,7 +92,7 @@ const PracticePanel = ({
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [inputText, sessionIndex, session, isReferenceOpen]);
+  }, [inputText, isReferenceOpen]);
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-4">
@@ -103,19 +100,21 @@ const PracticePanel = ({
         <div className="border-foreground/10 flex max-h-64 min-h-0 w-full items-center justify-center gap-4 overflow-hidden rounded-sm border-2 p-2 sm:p-6">
           <div className="flex w-[30%] shrink-0 flex-col items-center">
             <div className="text-7xl leading-none font-light">
-              {current.char}
+              {currentChar.char}
             </div>
             <div className="flex flex-col items-center">
-              <span className="text-base font-medium">{current.pinyin}</span>
+              <span className="text-base font-medium">
+                {currentChar.pinyin}
+              </span>
               <span className="text-foreground/60 text-sm">
-                ({pinyinToZhuyin(current.pinyin)})
+                ({pinyinToZhuyin(currentChar.pinyin)})
               </span>
             </div>
           </div>
 
           <div className="items-left flex min-w-0 flex-1 flex-col gap-1 overflow-hidden">
             <ol className="line-clamp-8 list-none">
-              {current.definition.map((def, j) => (
+              {currentChar.definition.map((def, j) => (
                 <li key={j} className="text-sm sm:text-base">
                   <span className="font-mono opacity-40">{j + 1}.</span> {def}
                 </li>
