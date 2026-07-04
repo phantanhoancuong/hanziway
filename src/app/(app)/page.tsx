@@ -10,7 +10,7 @@ import {
   CharacterWriter,
   ClickableCharacters,
   Section,
-} from "@/components/clients";
+} from "@/components/client";
 import { Icon } from "@/components/server";
 import { CJK_RE, CharacterEntry, cn, lookupCharacter } from "@/lib";
 import { SearchIcon } from "@/assets";

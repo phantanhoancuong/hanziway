@@ -9,7 +9,7 @@ import {
   LevelSelector,
   PracticePanel,
   ResultPanel,
-} from "@/components/clients";
+} from "@/components/client";
 
 import { PracticeChar } from "@/types";
 
