@@ -1,5 +1,6 @@
+import { CONTACT_EMAIL } from "@/app/constants";
+
 const LAST_UPDATED = "June 23, 2026";
-const CONTACT_EMAIL = "phantanhoancuong@gmail.com";
 
 export default function PrivacyPage() {
   return (
