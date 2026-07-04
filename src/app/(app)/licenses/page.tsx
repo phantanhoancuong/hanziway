@@ -1,12 +1,15 @@
+import { CONTACT_EMAIL } from "@/app/constants";
+
 export default function LicensesPage() {
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-2 p-6 text-justify">
       <div className="flex flex-col gap-2">
         <h1 className="text-2xl font-bold">Licenses &amp; Credits</h1>
         <p className="text-foreground/60 text-sm">
-          The dictionary for hanziway incorporates data from the projects listed
-          below. License notices and attribution information are provided in
-          accordance with their respective terms.
+          The dictionary and reference content for hanziway incorporates data
+          and assets from the projects listed below. License notices and
+          attribution information are provided in accordance with their
+          respective terms.
         </p>
       </div>
 
@@ -24,7 +27,7 @@ export default function LicensesPage() {
             Copyright © 2021–2026 Unicode, Inc. Used under the terms of the{" "}
             <a
               href="https://github.com/unicode-org/unihan-database/blob/main/LICENSE"
-              className="text-accent underline underline-offset-2"
+              className="text-foreground/60 underline underline-offset-2"
             >
               Unicode License v3
             </a>{" "}
@@ -61,7 +64,7 @@ export default function LicensesPage() {
             This work is licensed under the{" "}
             <a
               href="https://creativecommons.org/licenses/by-sa/4.0/"
-              className="text-accent underline underline-offset-2"
+              className="text-foreground/60 underline underline-offset-2"
             >
               Creative Commons Attribution-ShareAlike 4.0 International License
             </a>
@@ -89,12 +92,46 @@ export default function LicensesPage() {
             Text from this source is licensed under the{" "}
             <a
               href="https://creativecommons.org/licenses/by-sa/4.0/"
-              className="text-accent underline underline-offset-2"
+              className="text-foreground/60 underline underline-offset-2"
             >
               Creative Commons Attribution-ShareAlike 4.0 International License
             </a>
             . The content has been adapted and reformatted for use within
             hanziway. No warranty is provided.
+          </p>
+          <p className="text-sm">
+            Auxiliary-shape glyph SVG images are sourced from{" "}
+            <a
+              href="https://commons.wikimedia.org/wiki/User:Cangjie6"
+              className="text-accent underline underline-offset-2"
+            >
+              Cangjie6 on Wikimedia Commons
+            </a>{" "}
+            and dedicated to the public domain under the{" "}
+            <a
+              href="https://creativecommons.org/publicdomain/zero/1.0/"
+              className="text-foreground/60 underline underline-offset-2"
+            >
+              CC0 1.0 Universal Public Domain Dedication
+            </a>
+            .
+          </p>
+        </div>
+
+        <div className="border-foreground/10 flex flex-col gap-2 rounded-sm border-2 p-4">
+          <h3 className="text-foreground/40 text-base font-semibold tracking-wider uppercase">
+            Contact
+          </h3>
+          <p className="text-sm">
+            For questions about licensing, attribution, or to report a concern
+            regarding the use of third-party content, contact me at{" "}
+            <a
+              href={`mailto:${CONTACT_EMAIL}`}
+              className="text-accent underline underline-offset-2"
+            >
+              {CONTACT_EMAIL}
+            </a>
+            .
           </p>
         </div>
       </div>
