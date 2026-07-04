@@ -8,7 +8,7 @@ import { LETTER_TO_KEY, cn } from "@/lib";
 
 import { MAX_CANGJIE_LENGTH } from "@/constants";
 
-import { CangjieKeyboard } from "@/components/clients";
+import { CangjieKeyboard } from "@/components/client";
 import { Icon } from "@/components/server";
 
 import { PracticeChar } from "@/types";

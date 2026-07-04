@@ -1,6 +1,6 @@
 "use client";
 
-import { ControlKey, LetterKey } from "@/components/clients";
+import { ControlKey, LetterKey } from "@/components/client";
 
 const ROWS = [
   ["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"],

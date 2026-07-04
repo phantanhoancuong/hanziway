@@ -9,7 +9,7 @@ import {
   LevelSelector,
   PracticePanel,
   ResultPanel,
-} from "@/components/clients";
+} from "@/components/client";
 
 import { PracticeChar } from "@/types";
 
@@ -184,6 +184,7 @@ export default function PracticePage() {
               >
                 <div className="h-full overflow-y-auto">
                   <CangjieReferencePanel
+                    currentChar={currentChar}
                     onClose={() => setIsReferenceOpen(false)}
                   />
                 </div>

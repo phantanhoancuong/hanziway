@@ -1,21 +1,46 @@
 "use client";
 
+import { pinyinToZhuyin } from "pinyin-zhuyin";
+
 import { Icon } from "@/components/server";
 
-import { LETTER_TO_KEY } from "@/lib";
-import { glyphTree } from "@/lib/auxiliary-glyphs";
+import { LETTER_TO_KEY, glyphTree } from "@/lib";
 
-const CangjieReferencePanel = ({ onClose }: { onClose: () => void }) => {
+import { PracticeChar } from "@/types";
+const CangjieReferencePanel = ({
+  currentChar,
+  onClose,
+}: {
+  currentChar: PracticeChar;
+  onClose: () => void;
+}) => {
   return (
     <div className="flex flex-1 flex-col gap-2 px-4 pb-10">
-      <div className="bg-background sticky top-0 z-10 flex items-center justify-between pt-6 pb-2 lg:pt-10">
-        <h1 className="text-lg font-medium">Key References</h1>
-        <button
-          className="text-foreground/40 border-border bg-elevated hover:bg-foreground/5 cursor-pointer rounded-sm border-2 px-2 py-1 text-sm"
-          onClick={onClose}
-        >
-          Close
-        </button>
+      <div className="bg-background sticky top-0 z-10 pt-6 pb-2 lg:pt-10">
+        <div className="flex items-center justify-between">
+          <h1 className="text-lg font-medium">Key References</h1>
+          <button
+            className="text-foreground/40 border-border bg-elevated hover:bg-foreground/5 cursor-pointer rounded-sm border-2 px-2 py-1 text-sm"
+            onClick={onClose}
+          >
+            Close
+          </button>
+        </div>
+
+        <div className="border-foreground/10 mt-2 flex w-fit items-center gap-3 rounded-sm border-2 px-3 py-2 lg:hidden">
+          <span className="text-foreground/40 text-xs font-semibold tracking-wider uppercase">
+            Current
+          </span>
+          <span className="text-3xl leading-none font-light">
+            {currentChar.char}
+          </span>
+          <div className="flex flex-col">
+            <span className="text-sm font-medium">{currentChar.pinyin}</span>
+            <span className="text-foreground/60 text-xs">
+              ({pinyinToZhuyin(currentChar.pinyin)})
+            </span>
+          </div>
+        </div>
       </div>
 
       <div className="mt-4 flex flex-col gap-6">

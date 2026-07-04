@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { Header } from "@/components/clients";
+import { Header } from "@/components/client";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
