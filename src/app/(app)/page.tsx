@@ -12,7 +12,13 @@ import {
   Section,
 } from "@/components/client";
 import { Icon } from "@/components/server";
-import { CJK_RE, CharacterEntry, cn, lookupCharacter } from "@/lib";
+import {
+  CJK_RE,
+  LETTER_TO_KEY,
+  CharacterEntry,
+  cn,
+  lookupCharacter,
+} from "@/lib";
 import { SearchIcon } from "@/assets";
 
 export default function Home() {
@@ -158,6 +164,20 @@ export default function Home() {
                                 {m} ({pinyinToZhuyin(m!)})
                               </div>
                             ))}
+                          </div>
+                        </div>
+                        <div>
+                          <div className="text-foreground/40 text-xs">
+                            Cangjie
+                          </div>
+                          <div className="text-sm">
+                            {entry.cj
+                              ? `${entry.cj.toUpperCase()} (${entry.cj
+                                  .toUpperCase()
+                                  .split("")
+                                  .map((c) => LETTER_TO_KEY.get(c)?.radical)
+                                  .join("")})`
+                              : "—"}
                           </div>
                         </div>
                       </Section>
