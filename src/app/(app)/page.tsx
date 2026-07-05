@@ -27,6 +27,9 @@ export default function Home() {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [displayedCharacter, setDisplayedCharacter] = useState<string>("");
   const [entry, setEntry] = useState<CharacterEntry | null | undefined>(null);
+  const [searchMode, setSearchMode] = useState<"character" | "pinyin">(
+    "character"
+  );
 
   useEffect(() => {
     if (selectedIndex === null || !query) {
@@ -87,9 +90,33 @@ export default function Home() {
           <Icon src={SearchIcon} />
         </button>
       </form>
+      <div className="inline-grid grid-cols-2 gap-2 self-start">
+        <button
+          className={cn(
+            "bg-elevated border-border w-24 cursor-pointer rounded-sm border px-3 py-1 text-xs transition-all outline-none",
+            searchMode === "character"
+              ? "border-accent text-accent"
+              : "text-foreground/40 hover:text-foreground hover:border-foreground/40"
+          )}
+          onClick={() => setSearchMode("character")}
+        >
+          Character
+        </button>
+        <button
+          className={cn(
+            "bg-elevated border-border w-24 cursor-pointer rounded-sm border px-3 py-1 text-xs transition-all outline-none",
+            searchMode === "pinyin"
+              ? "border-accent text-accent"
+              : "text-foreground/40 hover:text-foreground hover:border-foreground/40"
+          )}
+          onClick={() => setSearchMode("pinyin")}
+        >
+          Pinyin
+        </button>
+      </div>
 
       {characters.length > 0 && (
-        <div className="flex flex-wrap gap-2">
+        <div className="mt-1 flex flex-wrap gap-2 lg:mt-2">
           {characters.map((character, index) => (
             <button
               className={cn(
