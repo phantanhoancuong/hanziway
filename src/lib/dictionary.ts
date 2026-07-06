@@ -50,7 +50,7 @@ let dictionary: Dictionary | null = null;
  *
  * @returns Promise resolving to the dictionary data.
  */
-const getDictionary = async (): Promise<Dictionary> => {
+export const getDictionary = async (): Promise<Dictionary> => {
   if (dictionary) return dictionary;
   const response = await fetch("/dictionary.json");
   dictionary = await response.json();

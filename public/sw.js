@@ -1,4 +1,4 @@
-const CACHE_NAME = "hanziway-0.8.4";
+const CACHE_NAME = "hanziway-0.8.5";
 
 const PRECACHE_URLS = ["/", "/practice", "/dictionary.json"];
 
