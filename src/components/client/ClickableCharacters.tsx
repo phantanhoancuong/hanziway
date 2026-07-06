@@ -10,11 +10,11 @@ const ClickableCharacters = ({
   onCharacterClick: (character: string) => void;
 }) => {
   return (
-    <>
+    <span>
       {[...text].map((character, index) =>
         test(character) ? (
           <span
-            className="hover:text-red-500 transition-colors cursor-pointer"
+            className="cursor-pointer transition-colors hover:text-red-500"
             key={index}
             onClick={() => onCharacterClick(character)}
           >
@@ -22,9 +22,9 @@ const ClickableCharacters = ({
           </span>
         ) : (
           character
-        ),
+        )
       )}
-    </>
+    </span>
   );
 };
 

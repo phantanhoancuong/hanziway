@@ -24,12 +24,45 @@ import { SearchIcon } from "@/assets";
 
 type SearchMode = "character" | "pinyin";
 
+const GRID_COLS = { base: 4, sm: 6, lg: 8 };
+const ROWS_PER_PAGE = 3;
+const PAGE_SIZE = GRID_COLS.lg * ROWS_PER_PAGE;
+const PAGE_SLOTS = 7;
+
+/**
+ * Build a page list with ellipsis gaps e.g. [0, "…", 3, 4, 5, "…", 27].
+ * @param current - Current page (0-indexed).
+ * @param total - Total number of pages.
+ * @returns Page numbers (0-indexed) and "…" placeholders, in display order.
+ */
+const getPageList = (current: number, total: number): (number | "…")[] => {
+  const edgeCount = PAGE_SLOTS - 2;
+  if (total <= PAGE_SLOTS) {
+    return Array.from({ length: total }, (_, i) => i);
+  }
+
+  if (current <= edgeCount - 1) {
+    return [...Array.from({ length: edgeCount }, (_, i) => i), "…", total - 1];
+  }
+
+  if (current >= total - edgeCount) {
+    return [
+      0,
+      "…",
+      ...Array.from({ length: edgeCount }, (_, i) => total - edgeCount + i),
+    ];
+  }
+
+  return [0, "…", current - 1, current, current + 1, "…", total - 1];
+};
+
 export default function Home() {
   const [inputText, setInputText] = useState<string>("");
-  const [query, setQuery] = useState<Set<string> | null>(null);
+  const [query, setQuery] = useState<Map<string, string> | null>(null);
   const [entry, setEntry] = useState<CharacterEntry | null | undefined>(null);
   const [searchMode, setSearchMode] = useState<SearchMode>("character");
   const [selectedChar, setSelectedChar] = useState<string | null>(null);
+  const [page, setPage] = useState<number>(0);
 
   useEffect(() => {
     if (selectedChar === null) return setEntry(null);
@@ -54,11 +87,19 @@ export default function Home() {
         .join("");
       if (!filtered) return;
 
-      setInputText("");
+      const uniqueChars = [...new Set(filtered)];
+      const entries = await Promise.all(
+        uniqueChars.map((char) => lookupCharacter(char))
+      );
 
-      setQuery(new Set(filtered));
-      setSelectedChar(filtered[0] ?? null);
+      setInputText("");
+      setQuery(
+        new Map(uniqueChars.map((char, i) => [char, entries[i]?.r[0]?.m ?? ""]))
+      );
+      setSelectedChar(uniqueChars[0] ?? null);
+      setPage(0);
     };
+
     const handlePinyinSearch = async () => {
       const words = trimmed.split(" ");
       if (!words) return;
@@ -66,11 +107,14 @@ export default function Home() {
       const resultsPerWord = await Promise.all(
         words.map((word) => searchByPinyin(word))
       );
-      const flatChars = resultsPerWord.flat().map((r) => r.char);
-      setInputText("");
+      const flatResults = resultsPerWord.flat();
 
-      setQuery(new Set(flatChars));
-      setSelectedChar(flatChars[0] ?? null);
+      setInputText("");
+      setQuery(
+        new Map(flatResults.map((r) => [r.char, r.entry.r[0]?.m ?? ""]))
+      );
+      setSelectedChar(flatResults[0]?.char ?? null);
+      setPage(0);
     };
 
     switch (searchMode) {
@@ -91,7 +135,10 @@ export default function Home() {
   const handleCharacterClick = async (character: string) =>
     setSelectedChar(character);
 
-  const characters = query ? [...query] : [];
+  const characters = query ? [...query.keys()] : [];
+
+  const totalPages = Math.ceil(characters.length / PAGE_SIZE);
+  const pageChars = characters.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-2 p-6">
@@ -144,21 +191,76 @@ export default function Home() {
       )}
 
       {characters.length > 0 && (
-        <div className="mt-1 flex flex-wrap gap-2 lg:mt-2">
-          {characters.map((character, index) => (
-            <button
-              className={cn(
-                "bg-elevated size-12 cursor-pointer rounded-sm border text-xl transition-all outline-none",
-                selectedChar === character
-                  ? "border-accent text-accent cursor-default"
-                  : "border-border text-foreground/40 hover:text-foreground hover:border-foreground/40"
-              )}
-              key={index}
-              onClick={() => setSelectedChar(character)}
-            >
-              {character}
-            </button>
-          ))}
+        <div className="mt-1 lg:mt-2">
+          <div className="grid grid-cols-4 gap-2 sm:grid-cols-6 lg:grid-cols-8">
+            {Array.from({ length: PAGE_SIZE }, (_, index) => {
+              const character = pageChars[index];
+              if (!character)
+                return <div className="h-14" key={index} aria-hidden />;
+
+              return (
+                <button
+                  className={cn(
+                    "bg-elevated flex h-14 cursor-pointer flex-col items-center justify-center gap-0.5 rounded-sm border text-lg transition-all outline-none",
+                    selectedChar === character
+                      ? "border-accent text-accent cursor-default"
+                      : "border-border text-foreground/40 hover:text-foreground hover:border-foreground/40"
+                  )}
+                  key={index}
+                  onClick={() => setSelectedChar(character)}
+                >
+                  <span>{character}</span>
+                  {query?.get(character) && (
+                    <span className="text-xs">{query.get(character)}</span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+
+          {totalPages > 1 && (
+            <div className="mt-2 flex justify-center">
+              <div className="flex min-w-[16rem] items-center justify-center gap-1">
+                <button
+                  className="text-foreground/40 hover:text-foreground cursor-pointer px-2 py-1 text-xs transition-colors disabled:cursor-default disabled:opacity-30"
+                  disabled={page === 0}
+                  onClick={() => setPage((p) => p - 1)}
+                >
+                  Prev
+                </button>
+                {getPageList(page, totalPages).map((p, i) =>
+                  p === "…" ? (
+                    <span
+                      key={`ellipsis-${i}`}
+                      className="text-foreground/40 flex h-7 w-7 items-center justify-center text-xs"
+                    >
+                      …
+                    </span>
+                  ) : (
+                    <button
+                      key={p}
+                      className={cn(
+                        "h-7 w-7 cursor-pointer rounded-sm text-xs transition-colors",
+                        page === p
+                          ? "bg-accent text-background"
+                          : "text-foreground/40 hover:text-foreground"
+                      )}
+                      onClick={() => setPage(p)}
+                    >
+                      {p + 1}
+                    </button>
+                  )
+                )}
+                <button
+                  className="text-foreground/40 hover:text-foreground cursor-pointer px-2 py-1 text-xs transition-colors disabled:cursor-default disabled:opacity-30"
+                  disabled={page === totalPages - 1}
+                  onClick={() => setPage((p) => p + 1)}
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -320,20 +422,19 @@ export default function Home() {
                         {reading.d && reading.d.length > 0 && (
                           <ol className="flex list-none flex-col gap-1">
                             {reading.d.map((def, j) => (
-                              <li
-                                key={j}
-                                className="flex gap-2 text-sm sm:text-base"
-                              >
+                              <li className="flex gap-2 text-sm sm:text-base">
                                 {reading.d!.length > 1 && (
                                   <span className="w-6 shrink-0 text-right font-mono text-sm opacity-40">
                                     {j + 1}.
                                   </span>
                                 )}
-                                <ClickableCharacters
-                                  text={def}
-                                  test={(char) => CJK_RE.test(char)}
-                                  onCharacterClick={handleCharacterClick}
-                                />
+                                <span className="min-w-0 flex-1">
+                                  <ClickableCharacters
+                                    text={def}
+                                    test={(char) => CJK_RE.test(char)}
+                                    onCharacterClick={handleCharacterClick}
+                                  />
+                                </span>
                               </li>
                             ))}
                           </ol>
