@@ -18,28 +18,23 @@ import {
   CharacterEntry,
   cn,
   lookupCharacter,
+  searchByPinyin,
 } from "@/lib";
 import { SearchIcon } from "@/assets";
 
+type SearchMode = "character" | "pinyin";
+
 export default function Home() {
   const [inputText, setInputText] = useState<string>("");
-  const [query, setQuery] = useState<string>("");
-  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
-  const [displayedCharacter, setDisplayedCharacter] = useState<string>("");
+  const [query, setQuery] = useState<Set<string> | null>(null);
   const [entry, setEntry] = useState<CharacterEntry | null | undefined>(null);
-  const [searchMode, setSearchMode] = useState<"character" | "pinyin">(
-    "character"
-  );
+  const [searchMode, setSearchMode] = useState<SearchMode>("character");
+  const [selectedChar, setSelectedChar] = useState<string | null>(null);
 
   useEffect(() => {
-    if (selectedIndex === null || !query) {
-      setEntry(null);
-      return;
-    }
-    const character = query[selectedIndex];
-    setDisplayedCharacter(character);
-    lookupCharacter(character).then((r) => setEntry(r ?? undefined));
-  }, [selectedIndex, query]);
+    if (selectedChar === null) return setEntry(null);
+    lookupCharacter(selectedChar).then((r) => setEntry(r ?? undefined));
+  }, [selectedChar, query]);
 
   /**
    * Commit the current input as a searchable query.
@@ -48,30 +43,53 @@ export default function Home() {
    *
    * @param e - Form submission event.
    */
-  const handleSubmit = (e: React.SubmitEvent) => {
+  const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault();
-    const filtered = [...inputText.trim()]
-      .filter((char) => CJK_RE.test(char))
-      .join("");
-    if (!filtered) return;
-    setQuery(filtered);
-    setInputText("");
-    setSelectedIndex(0);
+    const trimmed = inputText.trim();
+    if (!trimmed) return;
+
+    const handleCharacterSearch = async () => {
+      const filtered = [...trimmed]
+        .filter((char) => CJK_RE.test(char))
+        .join("");
+      if (!filtered) return;
+
+      setInputText("");
+
+      setQuery(new Set(filtered));
+      setSelectedChar(filtered[0] ?? null);
+    };
+    const handlePinyinSearch = async () => {
+      const words = trimmed.split(" ");
+      if (!words) return;
+
+      const resultsPerWord = await Promise.all(
+        words.map((word) => searchByPinyin(word))
+      );
+      const flatChars = resultsPerWord.flat().map((r) => r.char);
+      setInputText("");
+
+      setQuery(new Set(flatChars));
+      setSelectedChar(flatChars[0] ?? null);
+    };
+
+    switch (searchMode) {
+      case "character":
+        await handleCharacterSearch();
+        break;
+      case "pinyin":
+        await handlePinyinSearch();
+        break;
+    }
   };
 
   /**
    * Look up a character clicked anywhere on the page.
    *
-   * Update the detail panel without affecting the query or selected index.
-   *
    * @param character - The CJK character that was clicked.
    */
-  const handleCharacterClick = async (character: string) => {
-    setSelectedIndex(null);
-    setDisplayedCharacter(character);
-    const result = await lookupCharacter(character);
-    setEntry(result ?? undefined);
-  };
+  const handleCharacterClick = async (character: string) =>
+    setSelectedChar(character);
 
   const characters = query ? [...query] : [];
 
@@ -82,7 +100,11 @@ export default function Home() {
           className="bg-elevated border-border placeholder:text-foreground/40 text-foreground focus:border-accent hover:border-foreground/40 flex-1 cursor-text rounded-l-2xl border border-r-0 p-2 pl-4 transition-colors outline-none"
           type="text"
           value={inputText}
-          placeholder="Look up characters . . ."
+          placeholder={
+            searchMode === "character"
+              ? "Look up characters . . ."
+              : "Look up pinyin . . ."
+          }
           onChange={(e) => setInputText(e.target.value)}
         />
 
@@ -115,25 +137,32 @@ export default function Home() {
         </button>
       </div>
 
+      {query !== null && characters.length === 0 && (
+        <p className="text-foreground/40 mt-1 text-sm lg:mt-2">
+          No entries found
+        </p>
+      )}
+
       {characters.length > 0 && (
         <div className="mt-1 flex flex-wrap gap-2 lg:mt-2">
           {characters.map((character, index) => (
             <button
               className={cn(
                 "bg-elevated size-12 cursor-pointer rounded-sm border text-xl transition-all outline-none",
-                selectedIndex === index
+                selectedChar === character
                   ? "border-accent text-accent cursor-default"
                   : "border-border text-foreground/40 hover:text-foreground hover:border-foreground/40"
               )}
               key={index}
-              onClick={() => setSelectedIndex(index)}
+              onClick={() => setSelectedChar(character)}
             >
               {character}
             </button>
           ))}
         </div>
       )}
-      {entry !== null && (
+
+      {entry !== null && selectedChar && (
         <div className="flex w-full flex-col gap-6 pt-10">
           {entry !== undefined ? (
             <>
@@ -142,7 +171,7 @@ export default function Home() {
                 style={{ gridTemplateColumns: "50% 50%" }}
               >
                 <div className="flex flex-col gap-2">
-                  <CharacterWriter character={displayedCharacter} />
+                  <CharacterWriter character={selectedChar} />
 
                   {entry.var && entry.var.length > 0 && (
                     <div className="flex flex-col gap-1">
