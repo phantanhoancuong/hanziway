@@ -1,6 +1,6 @@
 {
   "name": "hanziway",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "private": true,
   "scripts": {
     "predev": "node scripts/generate-icon-index.mjs src/assets/auxiliary_glyphs && node scripts/generate-sw.mjs",
