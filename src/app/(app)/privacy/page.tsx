@@ -1,6 +1,6 @@
 import { CONTACT_EMAIL } from "@/app/constants";
 
-const LAST_UPDATED = "June 23, 2026";
+const LAST_UPDATED = "July 7, 2026";
 
 export default function PrivacyPage() {
   return (
@@ -32,10 +32,16 @@ export default function PrivacyPage() {
             app&apos;s pages and dictionary data on your device, so hanziway
             loads quickly and continues to work without a network connection.
           </p>
+          <p className="text-sm">
+            hanziway also stores a small piece of data in your browser&apos;s
+            local storage: the last app version you&apos;ve seen, so it knows
+            whether to show you a summary of what&apos;s changed after an
+            update. This data is not sent to any backend server whatsoever.
+          </p>
           <p className="text-foreground/60 text-sm">
-            Nothing you type, select, or practice is sent to or saved by me.
-            Your current session lives only in the page&apos;s memory and is
-            cleared the moment you reload or close the tab.
+            Beyond the version marker above, your current session lives only in
+            the page&apos;s memory and is cleared the moment you reload or close
+            the tab.
           </p>
         </div>
 
