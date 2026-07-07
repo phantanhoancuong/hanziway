@@ -10,4 +10,5 @@ export { default as PracticePanel } from "./PracticePanel";
 export { default as ResultPanel } from "./ResultPanel";
 export { default as ServiceWorkerRegistration } from "./ServiceWorkerRegistration";
 export { default as UpdatePanel } from "./UpdatePanel";
+export { default as UpdateNotice } from "./UpdateNotice";
 export * from "./Dictionary";
