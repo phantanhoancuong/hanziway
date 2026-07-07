@@ -1,3 +1,1 @@
-import packageJson from "@root/package.json";
-
-export const CURRENT_VERSION: string = packageJson.version;
+export const CURRENT_VERSION: string = process.env.NEXT_PUBLIC_APP_VERSION!;

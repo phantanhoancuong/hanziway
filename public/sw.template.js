@@ -4,11 +4,14 @@ const PRECACHE_URLS = ["/", "/practice", "/dictionary.json"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches
-      .open(CACHE_NAME)
-      .then((cache) => cache.addAll(PRECACHE_URLS))
-      .then(() => self.skipWaiting())
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(PRECACHE_URLS))
   );
+});
+
+self.addEventListener("message", (event) => {
+  if (event.data === "SKIP_WAITING") {
+    self.skipWaiting();
+  }
 });
 
 self.addEventListener("activate", (event) => {
