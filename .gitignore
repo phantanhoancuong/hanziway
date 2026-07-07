@@ -43,3 +43,6 @@ public/dictionary-formatted.json
 
 # glyphs barrel file
 src/assets/auxiliary_glyphs/index.ts
+
+# the generated service worker sw.js file
+public/sw.js

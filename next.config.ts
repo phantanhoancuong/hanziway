@@ -1,5 +1,6 @@
 import type { NextConfig } from "next";
-import packageJson from "./package.json";
+
+import packageJson from "@root/package.json";
 
 const nextConfig: NextConfig = {
   reactCompiler: true,
