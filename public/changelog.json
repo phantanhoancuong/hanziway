@@ -1,0 +1,11 @@
+[
+  {
+    "version": "1.0.0",
+    "summary": "hanziway (漢字道) is a Chinese character dictionary and Cangjie input practice tool.",
+    "added": [
+      "Look up any character through typing the character-typing or by pinyin pronunciation",
+      "See stroke count, Cangjie code and radical breakdown, and readings across Mandarin, Cantonese, Japanese, Korean, and Vietnamese",
+      "Practice typing Cangjie codes for real characters, filtered by HSK/TOCFL level"
+    ]
+  }
+]
