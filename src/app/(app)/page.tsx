@@ -10,8 +10,10 @@ import {
   CharacterWriter,
   ClickableCharacters,
   Section,
+  SearchModeToggle,
 } from "@/components/client";
 import { Icon } from "@/components/server";
+
 import {
   CJK_RE,
   LETTER_TO_KEY,
@@ -20,9 +22,10 @@ import {
   lookupCharacter,
   searchByPinyin,
 } from "@/lib";
-import { SearchIcon } from "@/assets";
 
-type SearchMode = "character" | "pinyin";
+import { SearchMode } from "@/types";
+
+import { SearchIcon } from "@/assets";
 
 const GRID_COLS = { base: 4, sm: 6, lg: 8 };
 const ROWS_PER_PAGE = 3;
@@ -159,30 +162,8 @@ export default function Home() {
           <Icon src={SearchIcon} />
         </button>
       </form>
-      <div className="inline-grid grid-cols-2 gap-2 self-start">
-        <button
-          className={cn(
-            "bg-elevated border-border w-24 cursor-pointer rounded-sm border px-3 py-1 text-xs transition-all outline-none",
-            searchMode === "character"
-              ? "border-accent text-accent"
-              : "text-foreground/40 hover:text-foreground hover:border-foreground/40"
-          )}
-          onClick={() => setSearchMode("character")}
-        >
-          Character
-        </button>
-        <button
-          className={cn(
-            "bg-elevated border-border w-24 cursor-pointer rounded-sm border px-3 py-1 text-xs transition-all outline-none",
-            searchMode === "pinyin"
-              ? "border-accent text-accent"
-              : "text-foreground/40 hover:text-foreground hover:border-foreground/40"
-          )}
-          onClick={() => setSearchMode("pinyin")}
-        >
-          Pinyin
-        </button>
-      </div>
+
+      <SearchModeToggle mode={searchMode} onChange={setSearchMode} />
 
       {query !== null && characters.length === 0 && (
         <p className="text-foreground/40 mt-1 text-sm lg:mt-2">
@@ -422,7 +403,10 @@ export default function Home() {
                         {reading.d && reading.d.length > 0 && (
                           <ol className="flex list-none flex-col gap-1">
                             {reading.d.map((def, j) => (
-                              <li className="flex gap-2 text-sm sm:text-base">
+                              <li
+                                key={j}
+                                className="flex gap-2 text-sm sm:text-base"
+                              >
                                 {reading.d!.length > 1 && (
                                   <span className="w-6 shrink-0 text-right font-mono text-sm opacity-40">
                                     {j + 1}.
