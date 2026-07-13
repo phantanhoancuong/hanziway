@@ -1,8 +1,9 @@
 export { default as CangjieKeyboard } from "./CangjieKeyboard";
 export { default as CangjieReferencePanel } from "./CangjieReferencePanel";
-export { default as ControlKey } from "./ControlKey";
+export { default as CharacterDetail } from "./CharacterDetail";
 export { default as CharacterWriter } from "./CharacterWriter";
 export { default as ClickableCharacters } from "./ClickableCharacters";
+export { default as ControlKey } from "./ControlKey";
 export { default as Header } from "./Header";
 export { default as LetterKey } from "./LetterKey";
 export { default as LevelSelector } from "./LevelSelector";
