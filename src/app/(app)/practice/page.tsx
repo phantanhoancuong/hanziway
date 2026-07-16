@@ -11,9 +11,9 @@ import {
   ResultPanel,
 } from "@/components/client";
 
-import { PracticeChar } from "@/types";
+import { PracticeChar, PracticeMode } from "@/types";
 
-import { SESSION_SIZE_OPTIONS } from "@/constants";
+import { PRACTICE_MODE_OPTIONS, SESSION_SIZE_OPTIONS } from "@/constants";
 
 /**
  * Return a new array containing a random subset of `arr`, shuffled.
@@ -53,6 +53,7 @@ export default function PracticePage() {
   );
   const [sessionIndex, setSessionIndex] = useState<number>(0);
   const [isReferenceOpen, setIsReferenceOpen] = useState<boolean>(false);
+  const [practiceMode, setPracticeMode] = useState<PracticeMode>("cangjie");
 
   /**
    * Add `id` to `selectedLevels` if absent, remove it if present.
@@ -144,8 +145,13 @@ export default function PracticePage() {
       {phase === "select" && (
         <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-8 p-6">
           <LevelSelector
+            selectedPracticeMode={practiceMode}
             selectedSessionSize={sessionSize}
+            onSelectPracticeMode={(option: PracticeMode) =>
+              setPracticeMode(option)
+            }
             onSelectSessionSize={(option: number) => setSessionSize(option)}
+            practiceModeOptions={PRACTICE_MODE_OPTIONS}
             sessionSizeOptions={SESSION_SIZE_OPTIONS}
             selectedLevels={selectedLevels}
             onStart={handleStart}

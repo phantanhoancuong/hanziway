@@ -3,6 +3,7 @@
 import { useRef } from "react";
 
 import { cn } from "@/lib";
+import { PracticeMode } from "@/types";
 
 const HSK_LEVELS = [
   { n: 1, label: "HSK 1" },
@@ -34,15 +35,21 @@ const TOCFL_LEVELS = [
  * @param onStart - Called with the selected HSK and TOCFL level numbers and the selected session size when the user clicks Start.
  */
 const LevelSelector = ({
+  selectedPracticeMode,
   selectedSessionSize,
+  onSelectPracticeMode,
   onSelectSessionSize,
+  practiceModeOptions,
   sessionSizeOptions,
   selectedLevels,
   onStart,
   onToggle,
 }: {
+  selectedPracticeMode: PracticeMode;
   selectedSessionSize: number;
+  onSelectPracticeMode: (practiceMode: PracticeMode) => void;
   onSelectSessionSize: (sessionSize: number) => void;
+  practiceModeOptions: readonly { label: string; value: PracticeMode }[];
   sessionSizeOptions: number[];
   selectedLevels: Set<string>;
   onStart: (
@@ -60,13 +67,34 @@ const LevelSelector = ({
     <div className="flex flex-col gap-8">
       <div className="text-foreground/40 flex flex-col items-center self-center text-lg font-semibold tracking-wider uppercase">
         <div>Cangjie Practice </div>
-        <div>(Work In Progress)</div>
       </div>
 
       <div className="flex flex-col gap-3">
         <span className="text-foreground/70 text-base font-bold tracking-wider uppercase">
           Settings
         </span>
+
+        <div className="flex flex-col gap-2">
+          <span className="text-foreground/40 text-sm font-semibold tracking-wider uppercase">
+            Practice Mode
+          </span>
+          <div className="flex gap-2">
+            {practiceModeOptions.map(({ label, value }) => (
+              <button
+                className={cn(
+                  "bg-elevated h-12 flex-1 cursor-pointer rounded-sm border text-sm transition-all outline-none",
+                  selectedPracticeMode === value
+                    ? "border-accent text-accent"
+                    : "border-border text-foreground/40 hover:text-foreground hover:border-foreground/40"
+                )}
+                key={value}
+                onClick={() => onSelectPracticeMode(value)}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
 
         <div className="flex flex-col gap-2">
           <span className="text-foreground/40 text-sm font-semibold tracking-wider uppercase">
