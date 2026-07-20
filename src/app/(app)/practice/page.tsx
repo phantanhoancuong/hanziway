@@ -2,11 +2,12 @@
 
 import { useState } from "react";
 
-import { cn, getCharactersByLevel } from "@/lib";
+import { cn, getCharactersByLevel, isPracticeCorrect } from "@/lib";
 
 import {
   CangjieReferencePanel,
   LevelSelector,
+  PinyinPracticePanel,
   PracticePanel,
   ResultPanel,
 } from "@/components/client";
@@ -43,7 +44,7 @@ const shuffle = <T,>(arr: T[], n?: number): T[] => {
  *
  * Orchestrate three phases:
  * - "select": the user picks the HSK / TOCFL levels through `LevelSelector`.
- * - "practice": the user works through the generated `session` through `PracticePanel`.
+ * - "practice": the user works through the generated `session` through `PracticePanel` (Cangjie mode) or `PinyinPracticePanel` (pinyin mode).
  * - "result": the user views their results and can retry missed characters or just a new session.
  */
 export default function PracticePage() {
@@ -90,7 +91,12 @@ export default function PracticePage() {
     tocflLevels: number[],
     requestedSessionSize: number
   ): Promise<void> => {
-    const allCharacters = await getCharactersByLevel(hskLevels, tocflLevels);
+    const requireCangjie = practiceMode === "cangjie";
+    const allCharacters = await getCharactersByLevel(
+      hskLevels,
+      tocflLevels,
+      requireCangjie
+    );
     const characters = shuffle(allCharacters, requestedSessionSize);
     setSessionIndex(0);
     setSession(
@@ -101,7 +107,7 @@ export default function PracticePage() {
 
         return {
           char: character.char,
-          cj: character.entry.cj!,
+          cj: character.entry.cj ?? "",
           pinyin: bestReading.m,
           definition: bestReading.d,
         };
@@ -135,7 +141,7 @@ export default function PracticePage() {
    */
   const handleRetryMissed = (): void => {
     const missed = session.filter(
-      (character) => character.cj !== character.typed
+      (character) => !isPracticeCorrect(character, practiceMode, tonePreference)
     );
     if (missed.length === 0) return;
     setSessionIndex(0);
@@ -173,6 +179,18 @@ export default function PracticePage() {
       {phase === "practice" &&
         (() => {
           const currentChar: PracticeChar = session[sessionIndex];
+
+          if (practiceMode === "pinyin") {
+            return (
+              <div className="mx-auto flex min-h-0 w-full max-w-3xl flex-1 flex-col overflow-hidden">
+                <PinyinPracticePanel
+                  currentChar={currentChar}
+                  onSubmit={handleSubmit}
+                />
+              </div>
+            );
+          }
+
           return (
             <>
               <div
@@ -213,6 +231,8 @@ export default function PracticePage() {
         <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-8 p-6">
           <ResultPanel
             session={session}
+            practiceMode={practiceMode}
+            tonePreference={tonePreference}
             onRetry={() => setPhase("select")}
             onRetryMissed={handleRetryMissed}
           />

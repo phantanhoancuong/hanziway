@@ -7,6 +7,7 @@ export { default as ControlKey } from "./ControlKey";
 export { default as Header } from "./Header";
 export { default as LetterKey } from "./LetterKey";
 export { default as LevelSelector } from "./LevelSelector";
+export { default as PinyinPracticePanel } from "./PinyinPracticePanel";
 export { default as PracticePanel } from "./PracticePanel";
 export { default as ResultGrid } from "./ResultGrid";
 export { default as ResultPanel } from "./ResultPanel";

@@ -75,11 +75,13 @@ export const lookupCharacter = async (
  *
  * @param hskLevels - HSK levels to include (1-9).
  * @param tocflLevels - TOCFL levels to include (1-6).
- * @returns Array of mathcing character entries with their characters.
+ * @param requireCangjie - If true, only include characters that have a Cangjie code. Defaults to true.
+ * @returns Array of matching character entries with their characters.
  */
 export const getCharactersByLevel = async (
   hskLevels: number[],
-  tocflLevels: number[]
+  tocflLevels: number[],
+  requireCangjie: boolean = true
 ): Promise<{ char: string; entry: CharacterEntry }[]> => {
   const dict = await getDictionary();
   const hskSet = new Set(hskLevels);
@@ -88,7 +90,7 @@ export const getCharactersByLevel = async (
   return Object.entries(dict)
     .filter(
       ([, entry]) =>
-        entry.cj !== undefined &&
+        (!requireCangjie || entry.cj !== undefined) &&
         ((entry.hsk !== undefined && hskSet.has(entry.hsk)) ||
           (entry.tocfl !== undefined && tocflSet.has(entry.tocfl)))
     )
