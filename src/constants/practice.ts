@@ -5,4 +5,9 @@ export const PRACTICE_MODE_OPTIONS = [
   { label: "Pinyin", value: "pinyin" },
 ] as const;
 
+export const TONE_PREFERENCE_OPTIONS = [
+  { label: "Tones", value: true },
+  { label: "No Tones", value: false },
+] as const;
+
 export const MAX_CANGJIE_LENGTH = 5;

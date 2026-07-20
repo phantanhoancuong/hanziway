@@ -13,7 +13,11 @@ import {
 
 import { PracticeChar, PracticeMode } from "@/types";
 
-import { PRACTICE_MODE_OPTIONS, SESSION_SIZE_OPTIONS } from "@/constants";
+import {
+  PRACTICE_MODE_OPTIONS,
+  SESSION_SIZE_OPTIONS,
+  TONE_PREFERENCE_OPTIONS,
+} from "@/constants";
 
 /**
  * Return a new array containing a random subset of `arr`, shuffled.
@@ -54,6 +58,7 @@ export default function PracticePage() {
   const [sessionIndex, setSessionIndex] = useState<number>(0);
   const [isReferenceOpen, setIsReferenceOpen] = useState<boolean>(false);
   const [practiceMode, setPracticeMode] = useState<PracticeMode>("cangjie");
+  const [tonePreference, setTonePreference] = useState<boolean>(true);
 
   /**
    * Add `id` to `selectedLevels` if absent, remove it if present.
@@ -147,12 +152,17 @@ export default function PracticePage() {
           <LevelSelector
             selectedPracticeMode={practiceMode}
             selectedSessionSize={sessionSize}
+            selectedTonePreference={tonePreference}
             onSelectPracticeMode={(option: PracticeMode) =>
               setPracticeMode(option)
             }
             onSelectSessionSize={(option: number) => setSessionSize(option)}
+            onSelectTonePreference={(option: boolean) =>
+              setTonePreference(option)
+            }
             practiceModeOptions={PRACTICE_MODE_OPTIONS}
             sessionSizeOptions={SESSION_SIZE_OPTIONS}
+            tonePreferenceOptions={TONE_PREFERENCE_OPTIONS}
             selectedLevels={selectedLevels}
             onStart={handleStart}
             onToggle={toggleLevel}
