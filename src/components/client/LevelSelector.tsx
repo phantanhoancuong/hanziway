@@ -3,6 +3,7 @@
 import { useRef } from "react";
 
 import { cn } from "@/lib";
+import { PracticeMode } from "@/types";
 
 const HSK_LEVELS = [
   { n: 1, label: "HSK 1" },
@@ -34,16 +35,28 @@ const TOCFL_LEVELS = [
  * @param onStart - Called with the selected HSK and TOCFL level numbers and the selected session size when the user clicks Start.
  */
 const LevelSelector = ({
+  selectedPracticeMode,
   selectedSessionSize,
+  selectedTonePreference,
+  onSelectPracticeMode,
   onSelectSessionSize,
+  onSelectTonePreference,
+  practiceModeOptions,
   sessionSizeOptions,
+  tonePreferenceOptions,
   selectedLevels,
   onStart,
   onToggle,
 }: {
+  selectedPracticeMode: PracticeMode;
   selectedSessionSize: number;
+  selectedTonePreference: boolean;
+  onSelectPracticeMode: (practiceMode: PracticeMode) => void;
   onSelectSessionSize: (sessionSize: number) => void;
+  onSelectTonePreference: (tonePreference: boolean) => void;
+  practiceModeOptions: readonly { label: string; value: PracticeMode }[];
   sessionSizeOptions: number[];
+  tonePreferenceOptions: readonly { label: string; value: boolean }[];
   selectedLevels: Set<string>;
   onStart: (
     hskLevels: number[],
@@ -59,14 +72,68 @@ const LevelSelector = ({
   return (
     <div className="flex flex-col gap-8">
       <div className="text-foreground/40 flex flex-col items-center self-center text-lg font-semibold tracking-wider uppercase">
-        <div>Cangjie Practice </div>
-        <div>(Work In Progress)</div>
+        <div>Typing Practice </div>
       </div>
+
+      <div className="flex flex-col gap-3">
+        <span className="text-foreground/70 text-base font-bold tracking-wider uppercase">
+          PRACTICE MODE
+        </span>
+        <div className="flex gap-2">
+          {practiceModeOptions.map(({ label, value }) => (
+            <button
+              className={cn(
+                "bg-elevated h-12 flex-1 cursor-pointer rounded-sm border text-sm transition-all outline-none",
+                selectedPracticeMode === value
+                  ? "border-accent text-accent"
+                  : "border-border text-foreground/40 hover:text-foreground hover:border-foreground/40"
+              )}
+              key={value}
+              onClick={() => onSelectPracticeMode(value)}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="border-border border-t" />
 
       <div className="flex flex-col gap-3">
         <span className="text-foreground/70 text-base font-bold tracking-wider uppercase">
           Settings
         </span>
+
+        <div
+          className={cn(
+            "grid transition-all duration-300",
+            selectedPracticeMode === "pinyin"
+              ? "grid-rows-[1fr] opacity-100"
+              : "grid-rows-[0fr] opacity-0"
+          )}
+        >
+          <div className="flex flex-col gap-2 overflow-hidden">
+            <span className="text-foreground/40 text-sm font-semibold tracking-wider uppercase">
+              Tones
+            </span>
+            <div className="flex gap-2">
+              {tonePreferenceOptions.map(({ label, value }, index) => (
+                <button
+                  className={cn(
+                    "bg-elevated h-12 flex-1 cursor-pointer rounded-sm border text-sm transition-all outline-none",
+                    selectedTonePreference === value
+                      ? "border-accent text-accent"
+                      : "border-border text-foreground/40 hover:text-foreground hover:border-foreground/40"
+                  )}
+                  key={index}
+                  onClick={() => onSelectTonePreference(value)}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
 
         <div className="flex flex-col gap-2">
           <span className="text-foreground/40 text-sm font-semibold tracking-wider uppercase">

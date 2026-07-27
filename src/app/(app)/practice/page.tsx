@@ -2,18 +2,23 @@
 
 import { useState } from "react";
 
-import { cn, getCharactersByLevel } from "@/lib";
+import { cn, getCharactersByLevel, isPracticeCorrect } from "@/lib";
 
 import {
   CangjieReferencePanel,
   LevelSelector,
+  PinyinPracticePanel,
   PracticePanel,
   ResultPanel,
 } from "@/components/client";
 
-import { PracticeChar } from "@/types";
+import { PracticeChar, PracticeMode } from "@/types";
 
-import { SESSION_SIZE_OPTIONS } from "@/constants";
+import {
+  PRACTICE_MODE_OPTIONS,
+  SESSION_SIZE_OPTIONS,
+  TONE_PREFERENCE_OPTIONS,
+} from "@/constants";
 
 /**
  * Return a new array containing a random subset of `arr`, shuffled.
@@ -39,7 +44,7 @@ const shuffle = <T,>(arr: T[], n?: number): T[] => {
  *
  * Orchestrate three phases:
  * - "select": the user picks the HSK / TOCFL levels through `LevelSelector`.
- * - "practice": the user works through the generated `session` through `PracticePanel`.
+ * - "practice": the user works through the generated `session` through `PracticePanel` (Cangjie mode) or `PinyinPracticePanel` (pinyin mode).
  * - "result": the user views their results and can retry missed characters or just a new session.
  */
 export default function PracticePage() {
@@ -53,6 +58,8 @@ export default function PracticePage() {
   );
   const [sessionIndex, setSessionIndex] = useState<number>(0);
   const [isReferenceOpen, setIsReferenceOpen] = useState<boolean>(false);
+  const [practiceMode, setPracticeMode] = useState<PracticeMode>("cangjie");
+  const [tonePreference, setTonePreference] = useState<boolean>(true);
 
   /**
    * Add `id` to `selectedLevels` if absent, remove it if present.
@@ -84,7 +91,12 @@ export default function PracticePage() {
     tocflLevels: number[],
     requestedSessionSize: number
   ): Promise<void> => {
-    const allCharacters = await getCharactersByLevel(hskLevels, tocflLevels);
+    const requireCangjie = practiceMode === "cangjie";
+    const allCharacters = await getCharactersByLevel(
+      hskLevels,
+      tocflLevels,
+      requireCangjie
+    );
     const characters = shuffle(allCharacters, requestedSessionSize);
     setSessionIndex(0);
     setSession(
@@ -95,7 +107,7 @@ export default function PracticePage() {
 
         return {
           char: character.char,
-          cj: character.entry.cj!,
+          cj: character.entry.cj ?? "",
           pinyin: bestReading.m,
           definition: bestReading.d,
         };
@@ -129,7 +141,7 @@ export default function PracticePage() {
    */
   const handleRetryMissed = (): void => {
     const missed = session.filter(
-      (character) => character.cj !== character.typed
+      (character) => !isPracticeCorrect(character, practiceMode, tonePreference)
     );
     if (missed.length === 0) return;
     setSessionIndex(0);
@@ -144,9 +156,19 @@ export default function PracticePage() {
       {phase === "select" && (
         <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-8 p-6">
           <LevelSelector
+            selectedPracticeMode={practiceMode}
             selectedSessionSize={sessionSize}
+            selectedTonePreference={tonePreference}
+            onSelectPracticeMode={(option: PracticeMode) =>
+              setPracticeMode(option)
+            }
             onSelectSessionSize={(option: number) => setSessionSize(option)}
+            onSelectTonePreference={(option: boolean) =>
+              setTonePreference(option)
+            }
+            practiceModeOptions={PRACTICE_MODE_OPTIONS}
             sessionSizeOptions={SESSION_SIZE_OPTIONS}
+            tonePreferenceOptions={TONE_PREFERENCE_OPTIONS}
             selectedLevels={selectedLevels}
             onStart={handleStart}
             onToggle={toggleLevel}
@@ -157,6 +179,18 @@ export default function PracticePage() {
       {phase === "practice" &&
         (() => {
           const currentChar: PracticeChar = session[sessionIndex];
+
+          if (practiceMode === "pinyin") {
+            return (
+              <div className="mx-auto flex min-h-0 w-full max-w-3xl flex-1 flex-col overflow-hidden">
+                <PinyinPracticePanel
+                  currentChar={currentChar}
+                  onSubmit={handleSubmit}
+                />
+              </div>
+            );
+          }
+
           return (
             <>
               <div
@@ -197,6 +231,8 @@ export default function PracticePage() {
         <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-8 p-6">
           <ResultPanel
             session={session}
+            practiceMode={practiceMode}
+            tonePreference={tonePreference}
             onRetry={() => setPhase("select")}
             onRetryMissed={handleRetryMissed}
           />

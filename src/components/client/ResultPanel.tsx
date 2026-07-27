@@ -2,20 +2,24 @@
 
 import { pinyinToZhuyin } from "pinyin-zhuyin";
 
-import { cn } from "@/lib";
-import { PracticeChar } from "@/types";
+import { cn, isPracticeCorrect, toDigitPinyin } from "@/lib";
+import { PracticeChar, PracticeMode } from "@/types";
 
 const ResultPanel = ({
   session,
+  practiceMode,
+  tonePreference,
   onRetry,
   onRetryMissed,
 }: {
   session: PracticeChar[];
+  practiceMode: PracticeMode;
+  tonePreference: boolean;
   onRetry: () => void;
   onRetryMissed: () => void;
 }) => {
   const missedCount = session.filter(
-    (character) => character.typed !== character.cj
+    (character) => !isPracticeCorrect(character, practiceMode, tonePreference)
   ).length;
   const correctCount = session.length - missedCount;
 
@@ -33,7 +37,11 @@ const ResultPanel = ({
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {session.map((character, index) => {
-          const correct = character.typed === character.cj;
+          const correct = isPracticeCorrect(
+            character,
+            practiceMode,
+            tonePreference
+          );
           return (
             <div
               className={cn(
@@ -45,12 +53,22 @@ const ResultPanel = ({
               <div className="flex items-start justify-between">
                 <div className="flex items-baseline gap-4">
                   <h2 className="text-3xl leading-none">{character.char}</h2>
-                  <div className="flex gap-2 text-sm">
-                    <p>{character.pinyin}</p>
-                    <p className="text-foreground/60">
+                  {practiceMode === "cangjie" && (
+                    <div className="flex gap-2 text-sm">
+                      <p>{character.pinyin}</p>
+                      <p className="text-foreground/60">
+                        {toDigitPinyin(character.pinyin)}
+                      </p>
+                      <p className="text-foreground/60">
+                        {pinyinToZhuyin(character.pinyin)}
+                      </p>
+                    </div>
+                  )}
+                  {practiceMode === "pinyin" && (
+                    <p className="text-foreground/60 text-sm">
                       {pinyinToZhuyin(character.pinyin)}
                     </p>
-                  </div>
+                  )}
                 </div>
                 <span
                   className={cn(
@@ -81,9 +99,13 @@ const ResultPanel = ({
                 {!correct && (
                   <div className="flex gap-2">
                     <span className="text-foreground/40 w-20 shrink-0">
-                      Cangjie
+                      {practiceMode === "cangjie" ? "Cangjie" : "Pinyin"}
                     </span>
-                    <span className="font-mono">{character.cj}</span>
+                    <span className="font-mono">
+                      {practiceMode === "cangjie"
+                        ? character.cj
+                        : `${character.pinyin} (${toDigitPinyin(character.pinyin)})`}
+                    </span>
                   </div>
                 )}
               </div>
