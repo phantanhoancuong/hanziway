@@ -24,6 +24,17 @@ const TOCFL_LEVELS = [
   { n: 6, label: "Advanced 2" },
 ];
 
+const BUTTON_CLASS =
+  "bg-elevated h-10 sm:h-12 cursor-pointer rounded-sm border text-xs sm:text-sm transition-all outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent";
+
+const BUTTON_STATE_CLASS = (active: boolean) =>
+  active
+    ? "border-accent text-accent"
+    : "border-border text-foreground/40 hover:text-foreground hover:border-foreground/40";
+
+const SECTION_CLASS =
+  "border-foreground/10 flex flex-col gap-2 rounded-sm border-2 p-4 sm:gap-3";
+
 /**
  * Let the user pick a session size, one or more HSK / TOCFL levels, and start a practice session.
  *
@@ -70,37 +81,40 @@ const LevelSelector = ({
   if (selectedLevels.size > 0) lastSelectedSize.current = selectedLevels.size;
 
   return (
-    <div className="flex flex-col gap-8">
-      <div className="text-foreground/40 flex flex-col items-center self-center text-lg font-semibold tracking-wider uppercase">
-        <div>Typing Practice </div>
+    <div className="flex flex-col gap-4 pb-8 sm:gap-6 lg:gap-8">
+      <div className="text-foreground/40 flex flex-col items-center self-center text-base font-semibold tracking-wider uppercase sm:text-lg">
+        <div>Typing Practice</div>
       </div>
 
-      <div className="flex flex-col gap-3">
-        <span className="text-foreground/70 text-base font-bold tracking-wider uppercase">
-          PRACTICE MODE
+      <div className={SECTION_CLASS}>
+        <span className="text-foreground/70 text-sm font-bold tracking-wider uppercase sm:text-base">
+          Practice Mode
         </span>
-        <div className="flex gap-2">
-          {practiceModeOptions.map(({ label, value }) => (
-            <button
-              className={cn(
-                "bg-elevated h-12 flex-1 cursor-pointer rounded-sm border text-sm transition-all outline-none",
-                selectedPracticeMode === value
-                  ? "border-accent text-accent"
-                  : "border-border text-foreground/40 hover:text-foreground hover:border-foreground/40"
-              )}
-              key={value}
-              onClick={() => onSelectPracticeMode(value)}
-            >
-              {label}
-            </button>
-          ))}
+
+        <div className="flex flex-col gap-1 sm:gap-2">
+          <span className="text-foreground/40 text-xs font-semibold tracking-wider uppercase sm:text-sm">
+            Method
+          </span>
+          <div className="flex gap-2">
+            {practiceModeOptions.map(({ label, value }) => (
+              <button
+                className={cn(
+                  BUTTON_CLASS,
+                  "flex-1",
+                  BUTTON_STATE_CLASS(selectedPracticeMode === value)
+                )}
+                key={value}
+                onClick={() => onSelectPracticeMode(value)}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
-      <div className="border-border border-t" />
-
-      <div className="flex flex-col gap-3">
-        <span className="text-foreground/70 text-base font-bold tracking-wider uppercase">
+      <div className={SECTION_CLASS}>
+        <span className="text-foreground/70 text-sm font-bold tracking-wider uppercase sm:text-base">
           Settings
         </span>
 
@@ -111,19 +125,19 @@ const LevelSelector = ({
               ? "grid-rows-[1fr] opacity-100"
               : "grid-rows-[0fr] opacity-0"
           )}
+          inert={selectedPracticeMode !== "pinyin" ? true : undefined}
         >
-          <div className="flex flex-col gap-2 overflow-hidden">
-            <span className="text-foreground/40 text-sm font-semibold tracking-wider uppercase">
+          <div className="flex flex-col gap-1 overflow-hidden sm:gap-2">
+            <span className="text-foreground/40 text-xs font-semibold tracking-wider uppercase sm:text-sm">
               Tones
             </span>
             <div className="flex gap-2">
               {tonePreferenceOptions.map(({ label, value }, index) => (
                 <button
                   className={cn(
-                    "bg-elevated h-12 flex-1 cursor-pointer rounded-sm border text-sm transition-all outline-none",
-                    selectedTonePreference === value
-                      ? "border-accent text-accent"
-                      : "border-border text-foreground/40 hover:text-foreground hover:border-foreground/40"
+                    BUTTON_CLASS,
+                    "flex-1",
+                    BUTTON_STATE_CLASS(selectedTonePreference === value)
                   )}
                   key={index}
                   onClick={() => onSelectTonePreference(value)}
@@ -135,8 +149,8 @@ const LevelSelector = ({
           </div>
         </div>
 
-        <div className="flex flex-col gap-2">
-          <span className="text-foreground/40 text-sm font-semibold tracking-wider uppercase">
+        <div className="flex flex-col gap-1 sm:gap-2">
+          <span className="text-foreground/40 text-xs font-semibold tracking-wider uppercase sm:text-sm">
             Session size
             <br />
             (how many characters per practice)
@@ -145,10 +159,9 @@ const LevelSelector = ({
             {sessionSizeOptions.map((option, index) => (
               <button
                 className={cn(
-                  "bg-elevated h-12 flex-1 cursor-pointer rounded-sm border text-sm transition-all outline-none",
-                  selectedSessionSize === option
-                    ? "border-accent text-accent"
-                    : "border-border text-foreground/40 hover:text-foreground hover:border-foreground/40"
+                  BUTTON_CLASS,
+                  "flex-1",
+                  BUTTON_STATE_CLASS(selectedSessionSize === option)
                 )}
                 key={index}
                 onClick={() => onSelectSessionSize(option)}
@@ -160,29 +173,25 @@ const LevelSelector = ({
         </div>
       </div>
 
-      <div className="border-border border-t" />
-
-      <div className="flex flex-col gap-3">
-        <span className="text-foreground/70 text-base font-bold tracking-wider uppercase">
+      <div className={SECTION_CLASS}>
+        <span className="text-foreground/70 text-sm font-bold tracking-wider uppercase sm:text-base">
           Levels
         </span>
 
-        <div className="flex flex-col gap-4">
-          <div className="flex flex-col gap-2">
-            <span className="text-foreground/40 text-sm font-semibold tracking-wider uppercase">
+        <div className="flex flex-col gap-2 sm:gap-3">
+          <div className="flex flex-col gap-1 sm:gap-2">
+            <span className="text-foreground/40 text-xs font-semibold tracking-wider uppercase sm:text-sm">
               HSK
             </span>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-7">
               {HSK_LEVELS.map((level) => {
                 const id = `hsk:${level.n}`;
                 return (
                   <button
                     className={cn(
-                      "bg-elevated h-12 cursor-pointer rounded-sm border text-sm transition-all outline-none",
-                      level.n === 7 && "col-span-3",
-                      selectedLevels.has(id)
-                        ? "border-accent text-accent"
-                        : "border-border text-foreground/40 hover:text-foreground hover:border-foreground/40"
+                      BUTTON_CLASS,
+                      level.n === 7 && "col-span-2 sm:col-span-3 lg:col-span-1",
+                      BUTTON_STATE_CLASS(selectedLevels.has(id))
                     )}
                     key={id}
                     onClick={() => onToggle(id)}
@@ -194,20 +203,18 @@ const LevelSelector = ({
             </div>
           </div>
 
-          <div className="flex flex-col gap-2">
-            <span className="text-foreground/40 text-sm font-semibold tracking-wider uppercase">
+          <div className="flex flex-col gap-1 sm:gap-2">
+            <span className="text-foreground/40 text-xs font-semibold tracking-wider uppercase sm:text-sm">
               TOCFL
             </span>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
               {TOCFL_LEVELS.map((level) => {
                 const id = `tocfl:${level.n}`;
                 return (
                   <button
                     className={cn(
-                      "bg-elevated h-12 cursor-pointer rounded-sm border text-sm transition-all outline-none",
-                      selectedLevels.has(id)
-                        ? "border-accent text-accent"
-                        : "border-border text-foreground/40 hover:text-foreground hover:border-foreground/40"
+                      BUTTON_CLASS,
+                      BUTTON_STATE_CLASS(selectedLevels.has(id))
                     )}
                     key={id}
                     onClick={() => onToggle(id)}
@@ -223,7 +230,7 @@ const LevelSelector = ({
 
       <button
         className={cn(
-          "bg-elevated border-border hover:bg-foreground/5 hover:border-accent hover:text-accent h-12 cursor-pointer rounded-sm border px-4 transition-all",
+          "bg-elevated border-border hover:bg-foreground/5 hover:border-accent hover:text-accent focus-visible:ring-accent h-10 cursor-pointer rounded-sm border px-4 text-sm transition-all outline-none focus-visible:ring-2 focus-visible:ring-inset sm:h-12 sm:text-base",
           selectedLevels.size > 0
             ? "opacity-100"
             : "pointer-events-none opacity-0"
