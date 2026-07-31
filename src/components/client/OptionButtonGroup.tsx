@@ -7,8 +7,8 @@ const BUTTON_CLASS =
 
 const BUTTON_STATE_CLASS = (active: boolean) =>
   active
-    ? "border-accent text-accent"
-    : "border-border text-foreground/40 hover:text-foreground hover:border-foreground/40";
+    ? "border-accent bg-accent/10 text-accent"
+    : "border-border text-foreground/60 hover:text-foreground hover:border-foreground/30";
 
 /**
  * A labeled row (or grid) of option buttons, with selected ones highlighted.
@@ -39,7 +39,7 @@ const OptionButtonGroup = <T,>({
 }) => {
   return (
     <div className="flex flex-col gap-1 sm:gap-2">
-      <span className="text-foreground/40 text-xs font-semibold tracking-wider uppercase sm:text-sm">
+      <span className="text-foreground/50 text-xs font-semibold tracking-wider uppercase sm:text-sm">
         {label}
       </span>
       <div className={layoutClassName}>

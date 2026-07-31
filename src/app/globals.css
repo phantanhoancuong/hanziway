@@ -1,11 +1,11 @@
 @import "tailwindcss";
 
 :root {
-  --background: oklch(96% 0.002 17.2);
-  --foreground: oklch(14.7% 0.004 49.3);
+  --background: oklch(98.5% 0 0);
+  --foreground: oklch(15% 0 0);
   --accent: oklch(63.7% 0.237 25.331);
-  --elevated: oklch(98.6% 0.002 67.8);
-  --border: oklch(86.8% 0.007 39.5);
+  --elevated: oklch(97% 0 0);
+  --border: oklch(89% 0 0);
 }
 
 @theme inline {
@@ -56,4 +56,46 @@ body {
   font-family:
     var(--font-geist-sans), "Noto Sans TC", "PingFang TC", "Microsoft JhengHei",
     sans-serif;
+}
+
+main {
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+main::-webkit-scrollbar {
+  width: 8px;
+}
+
+main::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+main::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+}
+
+main::-webkit-scrollbar-thumb:hover {
+  background: var(--foreground);
+  opacity: 0.4;
+}
+
+.definitions-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent) transparent;
+}
+
+.definitions-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.definitions-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.definitions-scroll::-webkit-scrollbar-thumb {
+  background: var(--accent);
+  border-radius: 3px;
 }

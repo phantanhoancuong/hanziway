@@ -2,7 +2,6 @@
 
 import { useRef } from "react";
 
-import { cn } from "@/lib";
 import { OptionButtonGroup } from "@/components/client";
 import { PracticeMode } from "@/types";
 
@@ -26,7 +25,10 @@ const TOCFL_LEVELS = [
 ];
 
 const SECTION_CLASS =
-  "border-foreground/10 flex flex-col gap-2 rounded-sm border-2 p-4 sm:gap-3";
+  "border-border flex flex-col gap-2 rounded-sm border p-4 sm:gap-3";
+
+const SECTION_HEADER_CLASS =
+  "text-foreground text-sm font-semibold tracking-wider uppercase sm:text-base";
 
 /**
  * Let the user pick a session size, one or more HSK / TOCFL levels, and start a practice session.
@@ -90,14 +92,10 @@ const LevelSelector = ({
 
   return (
     <div className="flex flex-col gap-4 pb-8 sm:gap-6 lg:gap-8">
-      <div className="text-foreground/40 flex flex-col items-center self-center text-base font-semibold tracking-wider uppercase sm:text-lg">
-        <div>Typing Practice</div>
-      </div>
+      <h1 className="text-2xl font-bold">Typing Practice</h1>
 
       <div className={SECTION_CLASS}>
-        <span className="text-foreground/70 text-sm font-bold tracking-wider uppercase sm:text-base">
-          Practice Mode
-        </span>
+        <span className={SECTION_HEADER_CLASS}>Practice Mode</span>
 
         <OptionButtonGroup
           label="Method"
@@ -108,17 +106,14 @@ const LevelSelector = ({
       </div>
 
       <div className={SECTION_CLASS}>
-        <span className="text-foreground/70 text-sm font-bold tracking-wider uppercase sm:text-base">
-          Settings
-        </span>
+        <span className={SECTION_HEADER_CLASS}>Settings</span>
 
         <div
-          className={cn(
-            "grid transition-all duration-300",
+          className={
             selectedPracticeMode === "pinyin"
-              ? "grid-rows-[1fr] opacity-100"
-              : "grid-rows-[0fr] opacity-0"
-          )}
+              ? "grid grid-rows-[1fr] opacity-100 transition-all duration-300"
+              : "grid grid-rows-[0fr] opacity-0 transition-all duration-300"
+          }
           inert={selectedPracticeMode !== "pinyin" ? true : undefined}
         >
           <div className="overflow-hidden">
@@ -146,9 +141,7 @@ const LevelSelector = ({
       </div>
 
       <div className={SECTION_CLASS}>
-        <span className="text-foreground/70 text-sm font-bold tracking-wider uppercase sm:text-base">
-          Levels
-        </span>
+        <span className={SECTION_HEADER_CLASS}>Levels</span>
 
         <div className="flex flex-col gap-2 sm:gap-3">
           <OptionButtonGroup
@@ -175,12 +168,11 @@ const LevelSelector = ({
       </div>
 
       <button
-        className={cn(
-          "bg-elevated border-border hover:bg-foreground/5 hover:border-accent hover:text-accent focus-visible:ring-accent h-10 cursor-pointer rounded-sm border px-4 text-sm transition-all outline-none focus-visible:ring-2 focus-visible:ring-inset sm:h-12 sm:text-base",
+        className={
           selectedLevels.size > 0
-            ? "opacity-100"
-            : "pointer-events-none opacity-0"
-        )}
+            ? "bg-accent text-background focus-visible:ring-accent h-10 cursor-pointer rounded-sm px-4 text-sm font-semibold opacity-100 transition-all outline-none hover:opacity-90 focus-visible:ring-2 focus-visible:ring-inset sm:h-12 sm:text-base"
+            : "bg-accent text-background focus-visible:ring-accent pointer-events-none h-10 cursor-pointer rounded-sm px-4 text-sm font-semibold opacity-0 transition-all outline-none hover:opacity-90 focus-visible:ring-2 focus-visible:ring-inset sm:h-12 sm:text-base"
+        }
         onClick={() => {
           const levels = [...selectedLevels];
           const hskLevels = levels

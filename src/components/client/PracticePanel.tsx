@@ -96,7 +96,7 @@ const PracticePanel = ({
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-4">
-      <div className="flex min-h-0 flex-1 flex-col justify-center gap-4 overflow-hidden p-2 lg:px-6">
+      <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden p-2 pt-8 sm:pt-16 lg:px-6">
         <PracticeCharacterCard
           character={currentChar.char}
           definitions={currentChar.definition}
@@ -111,6 +111,7 @@ const PracticePanel = ({
             </div>
           }
         />
+
         <div
           className={cn(
             "border-border flex w-full justify-center gap-2",
@@ -135,7 +136,7 @@ const PracticePanel = ({
         </div>
       </div>
 
-      <div className="flex shrink-0 flex-col justify-center gap-1 p-2 lg:px-6">
+      <div className="flex shrink-0 flex-col gap-1 p-2 lg:px-6">
         <button
           className="text-foreground/40 border-border bg-elevated hover:bg-foreground/5 m-1.5 mr-0 cursor-pointer self-end border-2 px-1.5 py-0.5 pr-0"
           onClick={onToggleReferenceOpen}

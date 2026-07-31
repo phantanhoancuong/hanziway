@@ -14,15 +14,15 @@ const LetterKey = ({
   const key = LETTER_TO_KEY.get(letter)!;
   return (
     <button
-      className={`border-border ${flexClass} bg-elevated hover:bg-foreground/5 cursor-pointer border-2`}
+      className={`border-border ${flexClass} bg-elevated hover:bg-foreground/5 hover:border-foreground/30 cursor-pointer border-2 transition-colors`}
       onClick={() => onChar(letter)}
       onMouseDown={(e) => e.preventDefault()}
     >
       <div className="flex flex-col items-center justify-center">
-        <div className="flex flex-1 items-center text-base sm:text-lg">
+        <div className="text-foreground flex flex-1 items-center text-base sm:text-lg">
           {key.letter}
         </div>
-        <div className="text-foreground/40 flex flex-1 items-center text-base sm:text-lg">
+        <div className="text-foreground/60 flex flex-1 items-center text-base sm:text-lg">
           {key.radical}
         </div>
       </div>
