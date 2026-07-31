@@ -2,8 +2,6 @@
 
 import { useEffect, useState } from "react";
 
-import { CURRENT_VERSION } from "@/lib/version";
-
 type ChangelogEntry = {
   version: string;
   summary?: string;
@@ -13,23 +11,43 @@ type ChangelogEntry = {
 
 const LAST_SEEN_KEY = "hanziway:lastSeenVersion";
 
+/**
+ * Compare two "major.minor.patch" version strings numerically.
+ *
+ * @param a - First version.
+ * @param b - Second version.
+ * @returns Negative if `a < b`, positive if `a > b`, 0 if equal.
+ */
+const compareVersions = (a: string, b: string): number => {
+  const partsA = a.split(".").map(Number);
+  const partsB = b.split(".").map(Number);
+
+  for (let i = 0; i < Math.max(partsA.length, partsB.length); i++) {
+    const diff = (partsA[i] ?? 0) - (partsB[i] ?? 0);
+    if (diff !== 0) return diff;
+  }
+
+  return 0;
+};
+
 export default function UpdateNotice() {
   const [entry, setEntry] = useState<ChangelogEntry | null>(null);
 
   useEffect(() => {
-    const lastSeen = localStorage.getItem(LAST_SEEN_KEY);
-    const shouldShow = lastSeen === null || lastSeen !== CURRENT_VERSION;
-
-    if (!shouldShow) return;
-
     fetch("/changelog.json")
       .then((r) => r.json())
       .then((changelog: ChangelogEntry[]) => {
-        const currentEntry = changelog.find(
-          (e) => e.version === CURRENT_VERSION
-        );
-        setEntry(currentEntry ?? null);
-        localStorage.setItem(LAST_SEEN_KEY, CURRENT_VERSION);
+        const latest = [...changelog].sort((a, b) =>
+          compareVersions(b.version, a.version)
+        )[0];
+        if (!latest) return;
+
+        const lastSeen = localStorage.getItem(LAST_SEEN_KEY);
+        const alreadySeen =
+          lastSeen !== null && compareVersions(lastSeen, latest.version) >= 0;
+
+        if (!alreadySeen) setEntry(latest);
+        localStorage.setItem(LAST_SEEN_KEY, latest.version);
       })
       .catch((err) => {
         console.error("Failed to load changelog:", err);
