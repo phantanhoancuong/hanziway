@@ -2,7 +2,7 @@
 
 import { useRef } from "react";
 
-import { cn } from "@/lib";
+import { OptionButtonGroup } from "@/components/client";
 import { PracticeMode } from "@/types";
 
 const HSK_LEVELS = [
@@ -23,6 +23,12 @@ const TOCFL_LEVELS = [
   { n: 5, label: "Advanced 1" },
   { n: 6, label: "Advanced 2" },
 ];
+
+const SECTION_CLASS =
+  "border-border flex flex-col gap-2 rounded-sm border p-4 sm:gap-3";
+
+const SECTION_HEADER_CLASS =
+  "text-foreground text-sm font-semibold tracking-wider uppercase sm:text-base";
 
 /**
  * Let the user pick a session size, one or more HSK / TOCFL levels, and start a practice session.
@@ -69,165 +75,104 @@ const LevelSelector = ({
   const lastSelectedSize = useRef(0);
   if (selectedLevels.size > 0) lastSelectedSize.current = selectedLevels.size;
 
+  const sessionSizeButtonOptions = sessionSizeOptions.map((n) => ({
+    label: String(n),
+    value: n,
+  }));
+
+  const hskButtonOptions = HSK_LEVELS.map((level) => ({
+    label: level.label,
+    value: `hsk:${level.n}`,
+  }));
+
+  const tocflButtonOptions = TOCFL_LEVELS.map((level) => ({
+    label: level.label,
+    value: `tocfl:${level.n}`,
+  }));
+
   return (
-    <div className="flex flex-col gap-8">
-      <div className="text-foreground/40 flex flex-col items-center self-center text-lg font-semibold tracking-wider uppercase">
-        <div>Typing Practice </div>
+    <div className="flex flex-col gap-4 pb-8 sm:gap-6 lg:gap-8">
+      <h1 className="text-2xl font-bold">Typing Practice</h1>
+
+      <div className={SECTION_CLASS}>
+        <span className={SECTION_HEADER_CLASS}>Practice Mode</span>
+
+        <OptionButtonGroup
+          label="Method"
+          options={practiceModeOptions}
+          isSelected={(value) => selectedPracticeMode === value}
+          onSelect={onSelectPracticeMode}
+        />
       </div>
 
-      <div className="flex flex-col gap-3">
-        <span className="text-foreground/70 text-base font-bold tracking-wider uppercase">
-          PRACTICE MODE
-        </span>
-        <div className="flex gap-2">
-          {practiceModeOptions.map(({ label, value }) => (
-            <button
-              className={cn(
-                "bg-elevated h-12 flex-1 cursor-pointer rounded-sm border text-sm transition-all outline-none",
-                selectedPracticeMode === value
-                  ? "border-accent text-accent"
-                  : "border-border text-foreground/40 hover:text-foreground hover:border-foreground/40"
-              )}
-              key={value}
-              onClick={() => onSelectPracticeMode(value)}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="border-border border-t" />
-
-      <div className="flex flex-col gap-3">
-        <span className="text-foreground/70 text-base font-bold tracking-wider uppercase">
-          Settings
-        </span>
+      <div className={SECTION_CLASS}>
+        <span className={SECTION_HEADER_CLASS}>Settings</span>
 
         <div
-          className={cn(
-            "grid transition-all duration-300",
+          className={
             selectedPracticeMode === "pinyin"
-              ? "grid-rows-[1fr] opacity-100"
-              : "grid-rows-[0fr] opacity-0"
-          )}
+              ? "grid grid-rows-[1fr] opacity-100 transition-all duration-300"
+              : "grid grid-rows-[0fr] opacity-0 transition-all duration-300"
+          }
+          inert={selectedPracticeMode !== "pinyin" ? true : undefined}
         >
-          <div className="flex flex-col gap-2 overflow-hidden">
-            <span className="text-foreground/40 text-sm font-semibold tracking-wider uppercase">
-              Tones
-            </span>
-            <div className="flex gap-2">
-              {tonePreferenceOptions.map(({ label, value }, index) => (
-                <button
-                  className={cn(
-                    "bg-elevated h-12 flex-1 cursor-pointer rounded-sm border text-sm transition-all outline-none",
-                    selectedTonePreference === value
-                      ? "border-accent text-accent"
-                      : "border-border text-foreground/40 hover:text-foreground hover:border-foreground/40"
-                  )}
-                  key={index}
-                  onClick={() => onSelectTonePreference(value)}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
+          <div className="overflow-hidden">
+            <OptionButtonGroup
+              label="Tones"
+              options={tonePreferenceOptions}
+              isSelected={(value) => selectedTonePreference === value}
+              onSelect={onSelectTonePreference}
+            />
           </div>
         </div>
 
-        <div className="flex flex-col gap-2">
-          <span className="text-foreground/40 text-sm font-semibold tracking-wider uppercase">
-            Session size
-            <br />
-            (how many characters per practice)
-          </span>
-          <div className="flex gap-2">
-            {sessionSizeOptions.map((option, index) => (
-              <button
-                className={cn(
-                  "bg-elevated h-12 flex-1 cursor-pointer rounded-sm border text-sm transition-all outline-none",
-                  selectedSessionSize === option
-                    ? "border-accent text-accent"
-                    : "border-border text-foreground/40 hover:text-foreground hover:border-foreground/40"
-                )}
-                key={index}
-                onClick={() => onSelectSessionSize(option)}
-              >
-                {option}
-              </button>
-            ))}
-          </div>
-        </div>
+        <OptionButtonGroup
+          label={
+            <>
+              Session size
+              <br />
+              (how many characters per practice)
+            </>
+          }
+          options={sessionSizeButtonOptions}
+          isSelected={(value) => selectedSessionSize === value}
+          onSelect={onSelectSessionSize}
+        />
       </div>
 
-      <div className="border-border border-t" />
+      <div className={SECTION_CLASS}>
+        <span className={SECTION_HEADER_CLASS}>Levels</span>
 
-      <div className="flex flex-col gap-3">
-        <span className="text-foreground/70 text-base font-bold tracking-wider uppercase">
-          Levels
-        </span>
+        <div className="flex flex-col gap-2 sm:gap-3">
+          <OptionButtonGroup
+            label="HSK"
+            options={hskButtonOptions}
+            isSelected={(value) => selectedLevels.has(value)}
+            onSelect={onToggle}
+            layoutClassName="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-7"
+            getButtonClassName={(option) =>
+              option.value === "hsk:7"
+                ? "col-span-2 sm:col-span-3 lg:col-span-1"
+                : ""
+            }
+          />
 
-        <div className="flex flex-col gap-4">
-          <div className="flex flex-col gap-2">
-            <span className="text-foreground/40 text-sm font-semibold tracking-wider uppercase">
-              HSK
-            </span>
-            <div className="grid grid-cols-3 gap-2">
-              {HSK_LEVELS.map((level) => {
-                const id = `hsk:${level.n}`;
-                return (
-                  <button
-                    className={cn(
-                      "bg-elevated h-12 cursor-pointer rounded-sm border text-sm transition-all outline-none",
-                      level.n === 7 && "col-span-3",
-                      selectedLevels.has(id)
-                        ? "border-accent text-accent"
-                        : "border-border text-foreground/40 hover:text-foreground hover:border-foreground/40"
-                    )}
-                    key={id}
-                    onClick={() => onToggle(id)}
-                  >
-                    {level.label}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-2">
-            <span className="text-foreground/40 text-sm font-semibold tracking-wider uppercase">
-              TOCFL
-            </span>
-            <div className="grid grid-cols-2 gap-2">
-              {TOCFL_LEVELS.map((level) => {
-                const id = `tocfl:${level.n}`;
-                return (
-                  <button
-                    className={cn(
-                      "bg-elevated h-12 cursor-pointer rounded-sm border text-sm transition-all outline-none",
-                      selectedLevels.has(id)
-                        ? "border-accent text-accent"
-                        : "border-border text-foreground/40 hover:text-foreground hover:border-foreground/40"
-                    )}
-                    key={id}
-                    onClick={() => onToggle(id)}
-                  >
-                    {level.label}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
+          <OptionButtonGroup
+            label="TOCFL"
+            options={tocflButtonOptions}
+            isSelected={(value) => selectedLevels.has(value)}
+            onSelect={onToggle}
+            layoutClassName="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6"
+          />
         </div>
       </div>
 
       <button
-        className={cn(
-          "bg-elevated border-border hover:bg-foreground/5 hover:border-accent hover:text-accent h-12 cursor-pointer rounded-sm border px-4 transition-all",
+        className={
           selectedLevels.size > 0
-            ? "opacity-100"
-            : "pointer-events-none opacity-0"
-        )}
+            ? "bg-accent text-background focus-visible:ring-accent h-10 cursor-pointer rounded-sm px-4 text-sm font-semibold opacity-100 transition-all outline-none hover:opacity-90 focus-visible:ring-2 focus-visible:ring-inset sm:h-12 sm:text-base"
+            : "bg-accent text-background focus-visible:ring-accent pointer-events-none h-10 cursor-pointer rounded-sm px-4 text-sm font-semibold opacity-0 transition-all outline-none hover:opacity-90 focus-visible:ring-2 focus-visible:ring-inset sm:h-12 sm:text-base"
+        }
         onClick={() => {
           const levels = [...selectedLevels];
           const hskLevels = levels

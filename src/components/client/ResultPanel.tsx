@@ -24,14 +24,33 @@ const ResultPanel = ({
   const correctCount = session.length - missedCount;
 
   return (
-    <div className="flex flex-col gap-10">
-      <div className="flex flex-col gap-2">
-        <h1 className="text-2xl font-bold">Result</h1>
-        <div className="flex items-baseline gap-2">
-          <span className="text-2xl font-bold">
-            {correctCount} / {session.length}
-          </span>
-          <span className="text-foreground/40 text-sm">correct</span>
+    <div className="flex flex-col gap-6 pb-8">
+      <div className="bg-background border-border sticky top-0 z-10 flex flex-col gap-3 border-b pt-2 pb-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-1">
+          <h1 className="text-2xl font-bold">Result</h1>
+          <div className="flex items-baseline gap-2">
+            <span className="text-2xl font-bold">
+              {correctCount} / {session.length}
+            </span>
+            <span className="text-foreground/60 text-sm">correct</span>
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-2 sm:flex-row sm:gap-3">
+          <button
+            className="bg-elevated border-border text-foreground hover:bg-foreground/5 hover:border-foreground/30 focus-visible:ring-accent h-10 cursor-pointer rounded-sm border px-4 text-sm transition-all outline-none focus-visible:ring-2 focus-visible:ring-inset sm:h-11"
+            onClick={onRetry}
+          >
+            Retry
+          </button>
+          {missedCount > 0 && (
+            <button
+              className="bg-accent text-background focus-visible:ring-accent h-10 cursor-pointer rounded-sm px-4 text-sm font-semibold transition-all outline-none hover:opacity-90 focus-visible:ring-2 focus-visible:ring-inset sm:h-11"
+              onClick={onRetryMissed}
+            >
+              Retry Missed ({missedCount})
+            </button>
+          )}
         </div>
       </div>
 
@@ -74,7 +93,7 @@ const ResultPanel = ({
                   className={cn(
                     "rounded-sm px-2 py-1 text-xs font-semibold",
                     correct
-                      ? "bg-foreground/5 text-foreground/40"
+                      ? "bg-foreground/5 text-foreground/60"
                       : "bg-accent/10 text-accent"
                   )}
                 >
@@ -84,7 +103,7 @@ const ResultPanel = ({
 
               <div className="flex flex-col gap-1 text-sm">
                 <div className="flex gap-2">
-                  <span className="text-foreground/40 w-20 shrink-0">
+                  <span className="text-foreground/60 w-20 shrink-0">
                     You typed
                   </span>
                   <span
@@ -98,7 +117,7 @@ const ResultPanel = ({
                 </div>
                 {!correct && (
                   <div className="flex gap-2">
-                    <span className="text-foreground/40 w-20 shrink-0">
+                    <span className="text-foreground/60 w-20 shrink-0">
                       {practiceMode === "cangjie" ? "Cangjie" : "Pinyin"}
                     </span>
                     <span className="font-mono">
@@ -134,23 +153,6 @@ const ResultPanel = ({
             </div>
           );
         })}
-      </div>
-
-      <div className="flex flex-col gap-2 sm:flex-row sm:gap-4">
-        <button
-          className="bg-elevated border-border hover:bg-foreground/5 hover:border-accent hover:text-accent h-12 flex-1 cursor-pointer rounded-sm border p-2 px-4 transition-all"
-          onClick={onRetry}
-        >
-          Retry
-        </button>
-        {missedCount > 0 && (
-          <button
-            className="bg-elevated border-border hover:bg-foreground/5 hover:border-accent hover:text-accent h-12 flex-1 cursor-pointer rounded-sm border p-2 px-4 transition-all"
-            onClick={onRetryMissed}
-          >
-            Retry Missed ({missedCount})
-          </button>
-        )}
       </div>
     </div>
   );

@@ -9,7 +9,7 @@ const ControlKey = ({
 }) => {
   return (
     <button
-      className="border-border bg-elevated hover:bg-foreground/5 flex-2 cursor-pointer border-2"
+      className="border-border bg-elevated hover:bg-foreground/5 hover:border-foreground/30 text-foreground flex-2 cursor-pointer border-2 transition-colors"
       onClick={onClick}
       onMouseDown={(e) => e.preventDefault()}
     >

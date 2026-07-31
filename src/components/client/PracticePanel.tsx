@@ -8,7 +8,7 @@ import { LETTER_TO_KEY, cn } from "@/lib";
 
 import { MAX_CANGJIE_LENGTH } from "@/constants";
 
-import { CangjieKeyboard } from "@/components/client";
+import { CangjieKeyboard, PracticeCharacterCard } from "@/components/client";
 import { Icon } from "@/components/server";
 
 import { PracticeChar } from "@/types";
@@ -96,12 +96,11 @@ const PracticePanel = ({
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-4">
-      <div className="flex min-h-0 flex-1 flex-col justify-center gap-4 overflow-hidden p-2 lg:px-6">
-        <div className="border-foreground/10 flex max-h-64 min-h-0 w-full items-center justify-center gap-4 overflow-hidden rounded-sm border-2 p-2 sm:p-6">
-          <div className="flex w-[30%] shrink-0 flex-col items-center">
-            <div className="text-7xl leading-none font-light">
-              {currentChar.char}
-            </div>
+      <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden p-2 pt-8 sm:pt-16 lg:px-6">
+        <PracticeCharacterCard
+          character={currentChar.char}
+          definitions={currentChar.definition}
+          hint={
             <div className="flex flex-col items-center">
               <span className="text-base font-medium">
                 {currentChar.pinyin}
@@ -110,18 +109,9 @@ const PracticePanel = ({
                 ({pinyinToZhuyin(currentChar.pinyin)})
               </span>
             </div>
-          </div>
+          }
+        />
 
-          <div className="items-left flex min-w-0 flex-1 flex-col gap-1 overflow-hidden">
-            <ol className="line-clamp-8 list-none">
-              {currentChar.definition.map((def, j) => (
-                <li key={j} className="text-sm sm:text-base">
-                  <span className="font-mono opacity-40">{j + 1}.</span> {def}
-                </li>
-              ))}
-            </ol>
-          </div>
-        </div>
         <div
           className={cn(
             "border-border flex w-full justify-center gap-2",
@@ -146,7 +136,7 @@ const PracticePanel = ({
         </div>
       </div>
 
-      <div className="flex shrink-0 flex-col justify-center gap-1 p-2 lg:px-6">
+      <div className="flex shrink-0 flex-col gap-1 p-2 lg:px-6">
         <button
           className="text-foreground/40 border-border bg-elevated hover:bg-foreground/5 m-1.5 mr-0 cursor-pointer self-end border-2 px-1.5 py-0.5 pr-0"
           onClick={onToggleReferenceOpen}

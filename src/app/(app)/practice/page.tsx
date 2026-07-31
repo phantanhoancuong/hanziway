@@ -154,7 +154,7 @@ export default function PracticePage() {
   return (
     <div className="flex h-full gap-8">
       {phase === "select" && (
-        <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-8 p-6">
+        <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-8 p-3 sm:p-6">
           <LevelSelector
             selectedPracticeMode={practiceMode}
             selectedSessionSize={sessionSize}

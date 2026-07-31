@@ -4,6 +4,8 @@ import { useState } from "react";
 
 import { cn } from "@/lib";
 
+import { PracticeCharacterCard } from "@/components/client";
+
 import { PracticeChar } from "@/types";
 
 const PinyinPracticePanel = ({
@@ -29,24 +31,13 @@ const PinyinPracticePanel = ({
   };
 
   return (
-    <div className="flex max-h-dvh min-h-0 flex-1 flex-col justify-start gap-4 overflow-y-auto p-2 pt-8 sm:pt-16 lg:px-6">
-      <div className="border-foreground/10 flex h-48 w-full items-center justify-center gap-4 overflow-hidden rounded-sm border-2 p-2 sm:p-6">
-        <div className="flex w-[30%] shrink-0 flex-col items-center">
-          <div className="text-7xl leading-none font-light">
-            {currentChar.char}
-          </div>
-        </div>
-
-        <div className="items-left flex min-w-0 flex-1 flex-col gap-1 overflow-hidden">
-          <ol className="line-clamp-8 list-none">
-            {currentChar.definition.map((def, j) => (
-              <li key={j} className="text-sm sm:text-base">
-                <span className="font-mono opacity-40">{j + 1}.</span> {def}
-              </li>
-            ))}
-          </ol>
-        </div>
-      </div>
+    <div className="flex max-h-dvh min-h-0 flex-1 flex-col justify-start gap-2 overflow-y-auto p-2 pt-4 sm:gap-0 sm:pt-16 lg:px-6">
+      <PracticeCharacterCard
+        character={currentChar.char}
+        definitions={currentChar.definition}
+        heightClass="h-48 sm:h-64 lg:h-72"
+        mergeBottom
+      />
 
       <form
         onSubmit={handleSubmit}
@@ -56,7 +47,7 @@ const PinyinPracticePanel = ({
         )}
       >
         <input
-          className="bg-elevated border-border placeholder:text-foreground/40 text-foreground focus:border-accent hover:border-foreground/40 w-full max-w-xl cursor-text rounded-2xl border p-2 pl-4 text-lg transition-colors outline-none"
+          className="bg-elevated border-border placeholder:text-foreground/40 text-foreground focus:border-accent hover:border-foreground/30 w-full cursor-text rounded-sm border p-2 pl-4 text-lg transition-colors outline-none sm:rounded-t-none sm:border-2"
           type="text"
           autoComplete="off"
           autoCorrect="off"
