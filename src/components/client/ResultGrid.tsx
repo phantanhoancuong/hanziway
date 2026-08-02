@@ -66,10 +66,10 @@ export default function ResultGrid({
           return (
             <button
               className={cn(
-                "bg-elevated flex h-14 cursor-pointer flex-col items-center justify-center gap-0.5 rounded-sm border text-lg transition-all outline-none",
+                "bg-elevated focus-visible:ring-accent flex h-14 cursor-pointer flex-col items-center justify-center gap-0.5 rounded-sm border text-lg transition-all outline-none focus-visible:ring-2 focus-visible:ring-inset",
                 selectedChar === character
-                  ? "border-accent text-accent cursor-default"
-                  : "border-border text-foreground/40 hover:text-foreground hover:border-foreground/40"
+                  ? "border-accent bg-accent/10 text-accent cursor-default"
+                  : "border-border text-foreground/60 hover:text-foreground hover:border-foreground/30"
               )}
               key={index}
               onClick={() => onSelect(character)}
@@ -87,7 +87,7 @@ export default function ResultGrid({
         <div className="mt-2 flex justify-center">
           <div className="flex min-w-[16rem] items-center justify-center gap-1">
             <button
-              className="text-foreground/40 hover:text-foreground cursor-pointer px-2 py-1 text-xs transition-colors disabled:cursor-default disabled:opacity-30"
+              className="text-foreground/60 hover:text-foreground focus-visible:ring-accent cursor-pointer rounded-sm px-2 py-1 text-xs transition-colors outline-none focus-visible:ring-2 focus-visible:ring-inset disabled:cursor-default disabled:opacity-30"
               disabled={page === 0}
               onClick={() => onPageChange(page - 1)}
             >
@@ -97,7 +97,7 @@ export default function ResultGrid({
               p === "…" ? (
                 <span
                   key={`ellipsis-${i}`}
-                  className="text-foreground/40 flex h-7 w-7 items-center justify-center text-xs"
+                  className="text-foreground/60 flex h-7 w-7 items-center justify-center text-xs"
                 >
                   …
                 </span>
@@ -105,10 +105,10 @@ export default function ResultGrid({
                 <button
                   key={p}
                   className={cn(
-                    "h-7 w-7 cursor-pointer rounded-sm text-xs transition-colors",
+                    "focus-visible:ring-accent h-7 w-7 cursor-pointer rounded-sm text-xs transition-colors outline-none focus-visible:ring-2 focus-visible:ring-inset",
                     page === p
                       ? "bg-accent text-background"
-                      : "text-foreground/40 hover:text-foreground"
+                      : "text-foreground/60 hover:text-foreground"
                   )}
                   onClick={() => onPageChange(p)}
                 >
@@ -117,7 +117,7 @@ export default function ResultGrid({
               )
             )}
             <button
-              className="text-foreground/40 hover:text-foreground cursor-pointer px-2 py-1 text-xs transition-colors disabled:cursor-default disabled:opacity-30"
+              className="text-foreground/60 hover:text-foreground focus-visible:ring-accent cursor-pointer rounded-sm px-2 py-1 text-xs transition-colors outline-none focus-visible:ring-2 focus-visible:ring-inset disabled:cursor-default disabled:opacity-30"
               disabled={page === totalPages - 1}
               onClick={() => onPageChange(page + 1)}
             >
