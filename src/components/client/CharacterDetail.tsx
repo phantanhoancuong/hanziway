@@ -21,28 +21,25 @@ export default function CharacterDetail({
   onCharacterClick: (character: string) => void;
 }) {
   if (!entry) {
-    return <p className="text-foreground/40 text-sm">No entry found</p>;
+    return <p className="text-foreground/60 text-sm">No entry found</p>;
   }
 
   return (
     <>
-      <div
-        className="grid items-start gap-6"
-        style={{ gridTemplateColumns: "50% 50%" }}
-      >
+      <div className="grid grid-cols-1 items-start gap-6 sm:grid-cols-2">
         <div className="flex flex-col gap-2">
           <CharacterWriter character={character} />
 
           {entry.var && entry.var.length > 0 && (
             <div className="flex flex-col gap-1">
-              <span className="text-foreground/40 text-xs font-semibold tracking-wider uppercase">
+              <span className="text-foreground/60 text-xs font-semibold tracking-wider uppercase">
                 {entry.var.length === 1 ? "Variant" : "Variants"}
               </span>
               <div className="flex flex-wrap gap-2">
                 {entry.var.map((varChar, i) => (
                   <button
                     key={i}
-                    className="bg-elevated border-border text-foreground/40 hover:text-foreground hover:border-foreground/40 aspect-square w-1/3 cursor-pointer rounded-lg border text-4xl transition-all outline-none sm:w-1/4"
+                    className="bg-elevated border-border text-foreground/60 hover:text-foreground hover:border-foreground/30 focus-visible:ring-accent aspect-square w-1/3 cursor-pointer rounded-lg border text-4xl transition-all outline-none focus-visible:ring-2 focus-visible:ring-inset sm:w-1/4"
                     onClick={() => onCharacterClick(varChar)}
                   >
                     {varChar}
@@ -58,11 +55,11 @@ export default function CharacterDetail({
             <div className="flex flex-col gap-8">
               <Section label="General" className="grid-cols-1 sm:grid-cols-2">
                 <div>
-                  <div className="text-foreground/40 text-xs">Strokes</div>
+                  <div className="text-foreground/60 text-xs">Strokes</div>
                   <div className="text-sm">{entry.sc ?? "—"}</div>
                 </div>
                 <div>
-                  <div className="text-foreground/40 text-xs">Mandarin</div>
+                  <div className="text-foreground/60 text-xs">Mandarin</div>
                   <div className="text-sm">
                     {[
                       ...new Set(entry.r!.filter((r) => r.m).map((r) => r.m)),
@@ -74,7 +71,7 @@ export default function CharacterDetail({
                   </div>
                 </div>
                 <div>
-                  <div className="text-foreground/40 text-xs">Cangjie</div>
+                  <div className="text-foreground/60 text-xs">Cangjie</div>
                   <div className="text-sm">
                     {entry.cj
                       ? `${entry.cj.toUpperCase()} (${entry.cj
@@ -92,11 +89,11 @@ export default function CharacterDetail({
                 className="grid-cols-1 sm:grid-cols-2"
               >
                 <div>
-                  <div className="text-foreground/40 text-xs">Cantonese</div>
+                  <div className="text-foreground/60 text-xs">Cantonese</div>
                   <div className="text-sm">{entry.c ?? "—"}</div>
                 </div>
                 <div>
-                  <div className="text-foreground/40 text-xs">Hanja</div>
+                  <div className="text-foreground/60 text-xs">Hanja</div>
                   <div className="text-sm">
                     {entry.k
                       ? `${entry.k} (${hangulRomanization.convert(entry.k)})`
@@ -104,7 +101,7 @@ export default function CharacterDetail({
                   </div>
                 </div>
                 <div>
-                  <div className="text-foreground/40 text-xs">On&apos;yomi</div>
+                  <div className="text-foreground/60 text-xs">On&apos;yomi</div>
                   <div className="flex flex-col text-sm">
                     {entry.on
                       ? entry.on.split(" ").map((r, i) => (
@@ -116,7 +113,7 @@ export default function CharacterDetail({
                   </div>
                 </div>
                 <div>
-                  <div className="text-foreground/40 text-xs">
+                  <div className="text-foreground/60 text-xs">
                     Kun&apos;yomi
                   </div>
                   <div className="flex flex-col text-sm">
@@ -130,7 +127,7 @@ export default function CharacterDetail({
                   </div>
                 </div>
                 <div>
-                  <div className="text-foreground/40 text-xs">Hán Việt</div>
+                  <div className="text-foreground/60 text-xs">Hán Việt</div>
                   <div className="text-sm">{entry.v ?? "—"}</div>
                 </div>
               </Section>
@@ -145,7 +142,7 @@ export default function CharacterDetail({
             {entry.r.map((reading, i) => (
               <div
                 key={i}
-                className="border-foreground/10 flex flex-col gap-2 rounded-sm border-2 p-3"
+                className="border-border flex flex-col gap-2 rounded-sm border-2 p-3"
               >
                 {reading.m && (
                   <div className="flex items-baseline gap-3">
@@ -161,7 +158,7 @@ export default function CharacterDetail({
                     {reading.d.map((def, j) => (
                       <li key={j} className="flex gap-2 text-sm sm:text-base">
                         {reading.d!.length > 1 && (
-                          <span className="w-6 shrink-0 text-right font-mono text-sm opacity-40">
+                          <span className="text-foreground/60 w-6 shrink-0 text-right font-mono text-sm">
                             {j + 1}.
                           </span>
                         )}
@@ -187,7 +184,7 @@ export default function CharacterDetail({
           <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-2">
             {entry.cp.map(([word, pinyin, definition], index) => (
               <div
-                className="border-foreground/20 rounded-sm border-2 p-3"
+                className="border-border rounded-sm border-2 p-3"
                 key={index}
               >
                 <div className="text-xl font-bold">
