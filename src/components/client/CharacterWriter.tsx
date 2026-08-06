@@ -5,16 +5,9 @@ import HanziWriter from "hanzi-writer";
 
 import { cn } from "@/lib";
 
-/**
- * Display and animate a Chinese character.
- *
- * Size itself to 80% of its container width.
- * Fall back to displaying the character as text if `HanziWriter` does not have stroke data for it.
- *
- * @param props.character - The Chinese character to display.
- * @param props.isLoop - Whether to loop the stroke animation. Default to `true`.
- * @param props.highlight - Whether to show a red border. Default to `true`.
- */
+// Initial size HanziWriter renders at internally.
+const WRITER_SIZE = 300;
+
 const CharacterWriter = ({
   character,
   isLoop = true,
@@ -24,38 +17,23 @@ const CharacterWriter = ({
   isLoop?: boolean;
   highlight?: boolean;
 }) => {
-  // `HanziWriter` performs imperative DOM rendering outside React, so we have to use a direct element reference.
   const targetDivRef = useRef<HTMLDivElement>(null);
-  // The writer instance is mutable and must not trigger React re-renders so we use a ref.
   const hanziWriterRef = useRef<HanziWriter>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [size, setSize] = useState<number>(0);
   const [loadFailed, setLoadFailed] = useState(false);
 
-  // Observe the container and derive the writer size from its width.
-  useEffect(() => {
-    if (!containerRef.current) return;
-    const observer = new ResizeObserver(([entry]) => {
-      setSize(Math.floor(entry.contentRect.width * 0.8));
-    });
-    observer.observe(containerRef.current);
-    return () => observer.disconnect();
-  }, []);
-
-  // Reset load failure state when character changes.
   useEffect(() => {
     setLoadFailed(false);
   }, [character]);
 
   useEffect(() => {
-    if (!targetDivRef.current || size === 0 || loadFailed) return;
+    if (!targetDivRef.current || loadFailed) return;
 
     hanziWriterRef.current = HanziWriter.create(
       targetDivRef.current,
       character,
       {
-        width: size,
-        height: size,
+        width: WRITER_SIZE,
+        height: WRITER_SIZE,
         padding: 5,
         strokeColor: highlight ? "#ef4444" : "#0c0a09",
         showCharacter: !highlight,
@@ -63,20 +41,28 @@ const CharacterWriter = ({
       }
     );
 
+    // HanziWriter renders a fixed-size <svg> with no viewBox.
+    // I give it one matching its own size, then stretch it to fill the wrapper with CSS.
+    const svg = targetDivRef.current.querySelector("svg");
+    if (svg) {
+      svg.setAttribute("viewBox", `0 0 ${WRITER_SIZE} ${WRITER_SIZE}`);
+      svg.style.width = "100%";
+      svg.style.height = "100%";
+      svg.style.display = "block";
+    }
+
     if (isLoop) hanziWriterRef.current.loopCharacterAnimation();
 
     return () => {
       if (targetDivRef.current) targetDivRef.current.innerHTML = "";
     };
-  }, [character, size, loadFailed]);
+  }, [character, loadFailed]);
 
   return (
     <div
-      ref={containerRef}
       className={cn(
-        "relative flex aspect-square w-full items-center justify-center rounded-lg border-2",
-        highlight ? "border-accent" : "border-border",
-        size === 0 && "invisible"
+        "@container relative flex aspect-square w-full items-center justify-center rounded-lg border-2",
+        highlight ? "border-accent" : "border-border"
       )}
     >
       {highlight && (
@@ -125,11 +111,12 @@ const CharacterWriter = ({
       )}
 
       {loadFailed ? (
-        <span className="relative z-10" style={{ fontSize: size * 0.7 }}>
-          {character}
-        </span>
+        <span className="relative z-10 text-[56cqw]">{character}</span>
       ) : (
-        <div className="relative z-10" ref={targetDivRef} />
+        <div
+          className="relative z-10 aspect-square w-[80%]"
+          ref={targetDivRef}
+        />
       )}
     </div>
   );
