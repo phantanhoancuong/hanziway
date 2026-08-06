@@ -1,7 +1,6 @@
 "use client";
 
 import { cn } from "@/lib";
-
 import { SearchMode } from "@/types";
 
 const MODES: { value: SearchMode; label: string; ariaLabel: string }[] = [
@@ -27,10 +26,8 @@ export default function SearchModeToggle({
             aria-label={ariaLabel}
             aria-pressed={active}
             className={cn(
-              "focus-visible:ring-accent relative min-h-9 w-16 cursor-pointer rounded-full border text-xs font-medium transition-colors duration-500 outline-none focus-visible:ring-2 focus-visible:ring-inset",
-              active
-                ? "border-accent"
-                : "text-foreground/60 hover:text-foreground border-transparent"
+              "focus-visible:ring-accent group relative min-h-9 w-16 cursor-pointer rounded-full border transition-colors duration-200 outline-none focus-visible:ring-2 focus-visible:ring-inset",
+              active ? "border-accent" : "border-transparent"
             )}
             onClick={() => onChange(value)}
           >
@@ -43,8 +40,10 @@ export default function SearchModeToggle({
             />
             <span
               className={cn(
-                "relative z-10 transition-colors duration-200",
-                active && "text-accent"
+                "text-foreground relative z-10 text-xs font-medium transition-opacity duration-200",
+                active
+                  ? "text-accent opacity-100"
+                  : "opacity-60 group-hover:opacity-100"
               )}
             >
               {label}
