@@ -1,8 +1,16 @@
 [
   {
-    "version": "1.1.0",
-    "summary": "Add a new Pinyin typing practice mode",
-    "added": ["Pinyin practice mode, with an option to require correct tones"]
+    "version": "1.1.3",
+    "summary": "A polish pass across the app, plus Pinyin practice, sharing, and shareable search links.",
+    "added": [
+      "Pinyin practice mode, with an option to require correct tones",
+      "Share or copy a link to any search or character lookup",
+      "Reload, share, or use the back button to return to a previous search"
+    ],
+    "fixed": [
+      "Easier to read text and buttons throughout practice and lookup",
+      "A cleaner, easier-to-use search bar"
+    ]
   },
   {
     "version": "1.0.0",
