@@ -1,12 +1,13 @@
 "use client";
+
 import { useEffect, useRef, useState } from "react";
 
 import HanziWriter from "hanzi-writer";
 
 import { cn } from "@/lib";
 
-// Initial size HanziWriter renders at internally.
-const WRITER_SIZE = 300;
+// Fixed rendering size for HanziWriter.
+const WRITER_SIZE = 1200;
 
 const CharacterWriter = ({
   character,
@@ -17,9 +18,22 @@ const CharacterWriter = ({
   isLoop?: boolean;
   highlight?: boolean;
 }) => {
+  const containerRef = useRef<HTMLDivElement>(null);
   const targetDivRef = useRef<HTMLDivElement>(null);
   const hanziWriterRef = useRef<HanziWriter>(null);
   const [loadFailed, setLoadFailed] = useState(false);
+  const [scale, setScale] = useState(1);
+
+  /** Track the container's width to compute the scale factor. */
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const observer = new ResizeObserver(([entry]) => {
+      const newScale = entry.contentRect.width / WRITER_SIZE;
+      setScale((prev) => (prev === newScale ? prev : newScale));
+    });
+    observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     setLoadFailed(false);
@@ -37,19 +51,10 @@ const CharacterWriter = ({
         padding: 5,
         strokeColor: highlight ? "#ef4444" : "#0c0a09",
         showCharacter: !highlight,
+        renderer: "canvas",
         onLoadCharDataError: () => setLoadFailed(true),
       }
     );
-
-    // HanziWriter renders a fixed-size <svg> with no viewBox.
-    // I give it one matching its own size, then stretch it to fill the wrapper with CSS.
-    const svg = targetDivRef.current.querySelector("svg");
-    if (svg) {
-      svg.setAttribute("viewBox", `0 0 ${WRITER_SIZE} ${WRITER_SIZE}`);
-      svg.style.width = "100%";
-      svg.style.height = "100%";
-      svg.style.display = "block";
-    }
 
     if (isLoop) hanziWriterRef.current.loopCharacterAnimation();
 
@@ -60,8 +65,9 @@ const CharacterWriter = ({
 
   return (
     <div
+      ref={containerRef}
       className={cn(
-        "@container relative flex aspect-square w-full items-center justify-center rounded-lg border-2",
+        "relative aspect-square w-full overflow-hidden rounded-lg border-2",
         highlight ? "border-accent" : "border-border"
       )}
     >
@@ -111,12 +117,24 @@ const CharacterWriter = ({
       )}
 
       {loadFailed ? (
-        <span className="relative z-10 text-[56cqw]">{character}</span>
+        <span
+          className="absolute inset-0 z-10 flex items-center justify-center"
+          style={{ fontSize: WRITER_SIZE * scale * 0.56 }}
+        >
+          {character}
+        </span>
       ) : (
         <div
-          className="relative z-10 aspect-square w-[80%]"
-          ref={targetDivRef}
-        />
+          className="absolute top-0 left-0 z-10"
+          style={{
+            width: WRITER_SIZE,
+            height: WRITER_SIZE,
+            transform: `scale(${scale})`,
+            transformOrigin: "top left",
+          }}
+        >
+          <div ref={targetDivRef} />
+        </div>
       )}
     </div>
   );
