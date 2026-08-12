@@ -6,8 +6,20 @@ import HanziWriter from "hanzi-writer";
 
 import { cn } from "@/lib";
 
-// Fixed rendering size for HanziWriter.
-const WRITER_SIZE = 1200;
+// Native render size tiers.
+const SIZE_TIERS: { minWidth: number; size: number }[] = [
+  { minWidth: 1024, size: 1200 },
+  { minWidth: 640, size: 600 },
+  { minWidth: 400, size: 400 },
+  { minWidth: 0, size: 250 },
+];
+
+// Ceiling on the final size after the DPR multiplier.
+const MAX_WRITER_SIZE = 1600;
+
+// Core count treated like a heuristics for low power devices to downscale the rendering size.
+const LOW_POWER_CORE_THRESHOLD = 4;
+const LOW_POWER_MULTIPLIER = 0.5;
 
 const CharacterWriter = ({
   character,
@@ -24,34 +36,65 @@ const CharacterWriter = ({
   const [loadFailed, setLoadFailed] = useState(false);
   const [scale, setScale] = useState(1);
 
-  /** Track the container's width to compute the scale factor. */
+  const [writerSize, setWriterSize] = useState<number>(SIZE_TIERS[0].size);
+
+  // Gate `HanziWriter.create()` until `writerSize` is calculated.
+  // Start `false` so it doesn't affect hydration.
+  const [sizeReady, setSizeReady] = useState(false);
+
+  useEffect(() => {
+    const width = typeof window !== "undefined" ? window.innerWidth : 1024;
+    const tierSize =
+      SIZE_TIERS.find((tier) => width >= tier.minWidth)?.size ??
+      SIZE_TIERS[SIZE_TIERS.length - 1].size;
+
+    const isLowPower =
+      typeof navigator !== "undefined" &&
+      "hardwareConcurrency" in navigator &&
+      navigator.hardwareConcurrency <= LOW_POWER_CORE_THRESHOLD;
+
+    // Screens with high DPR need more native resolution to stay sharp.
+    const dpr =
+      typeof window !== "undefined" ? (window.devicePixelRatio ?? 1) : 1;
+    const dprMultiplier = Math.min(dpr, 3);
+
+    const targetSize = isLowPower
+      ? Math.round(tierSize * LOW_POWER_MULTIPLIER)
+      : Math.min(Math.round(tierSize * dprMultiplier), MAX_WRITER_SIZE);
+
+    setWriterSize(targetSize);
+    setSizeReady(true);
+  }, []);
+
+  // Track the container's width to compute the scale factor.
   useEffect(() => {
     if (!containerRef.current) return;
     const observer = new ResizeObserver(([entry]) => {
-      const newScale = entry.contentRect.width / WRITER_SIZE;
+      const newScale = entry.contentRect.width / writerSize;
       setScale((prev) => (prev === newScale ? prev : newScale));
     });
     observer.observe(containerRef.current);
     return () => observer.disconnect();
-  }, []);
+  }, [writerSize]);
 
   useEffect(() => {
     setLoadFailed(false);
   }, [character]);
 
   useEffect(() => {
-    if (!targetDivRef.current || loadFailed) return;
+    if (!sizeReady || !targetDivRef.current) return;
 
     hanziWriterRef.current = HanziWriter.create(
       targetDivRef.current,
       character,
       {
-        width: WRITER_SIZE,
-        height: WRITER_SIZE,
+        width: writerSize,
+        height: writerSize,
         padding: 5,
         strokeColor: highlight ? "#ef4444" : "#0c0a09",
         showCharacter: !highlight,
         renderer: "canvas",
+        delayBetweenStrokes: 700,
         onLoadCharDataError: () => setLoadFailed(true),
       }
     );
@@ -61,11 +104,13 @@ const CharacterWriter = ({
     return () => {
       if (targetDivRef.current) targetDivRef.current.innerHTML = "";
     };
-  }, [character, loadFailed]);
+  }, [character, writerSize, highlight, isLoop, sizeReady]);
 
   return (
     <div
       ref={containerRef}
+      role="img"
+      aria-label={`Stroke order animation for ${character}`}
       className={cn(
         "relative aspect-square w-full overflow-hidden rounded-lg border-2",
         highlight ? "border-accent" : "border-border"
@@ -119,16 +164,18 @@ const CharacterWriter = ({
       {loadFailed ? (
         <span
           className="absolute inset-0 z-10 flex items-center justify-center"
-          style={{ fontSize: WRITER_SIZE * scale * 0.56 }}
+          style={{ fontSize: `${writerSize * scale * 0.35}px` }}
+          aria-hidden="true"
         >
           {character}
         </span>
       ) : (
         <div
           className="absolute top-0 left-0 z-10"
+          aria-hidden="true"
           style={{
-            width: WRITER_SIZE,
-            height: WRITER_SIZE,
+            width: writerSize,
+            height: writerSize,
             transform: `scale(${scale})`,
             transformOrigin: "top left",
           }}
