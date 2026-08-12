@@ -1,15 +1,16 @@
 [
   {
-    "version": "1.1.3",
-    "summary": "A polish pass across the app, plus Pinyin practice, sharing, and shareable search links.",
+    "version": "1.1.5",
+    "summary": "Pinyin practice, deep-link sharing, changelog page, and interface polish",
     "added": [
       "Pinyin practice mode, with an option to require correct tones",
       "Share or copy a link to any search or character lookup",
-      "Reload, share, or use the back button to return to a previous search"
+      "Reload, share, or use the back button to return to a previous search",
+      "A changelog page, so you can browse past updates"
     ],
     "fixed": [
-      "Easier to read text and buttons throughout practice and lookup",
-      "A cleaner, easier-to-use search bar"
+      "Easier to read text and buttons",
+      "A cleaner, and more modern design for the search bar"
     ]
   },
   {

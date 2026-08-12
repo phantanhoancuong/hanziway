@@ -2,33 +2,13 @@
 
 import { useEffect, useState } from "react";
 
-type ChangelogEntry = {
-  version: string;
-  summary?: string;
-  added?: string[];
-  fixed?: string[];
-};
+import Link from "next/link";
+
+import { compareVersions } from "@/lib";
+
+import { ChangelogEntry } from "@/types";
 
 const LAST_SEEN_KEY = "hanziway:lastSeenVersion";
-
-/**
- * Compare two "major.minor.patch" version strings numerically.
- *
- * @param a - First version.
- * @param b - Second version.
- * @returns Negative if `a < b`, positive if `a > b`, 0 if equal.
- */
-const compareVersions = (a: string, b: string): number => {
-  const partsA = a.split(".").map(Number);
-  const partsB = b.split(".").map(Number);
-
-  for (let i = 0; i < Math.max(partsA.length, partsB.length); i++) {
-    const diff = (partsA[i] ?? 0) - (partsB[i] ?? 0);
-    if (diff !== 0) return diff;
-  }
-
-  return 0;
-};
 
 export default function UpdateNotice() {
   const [entry, setEntry] = useState<ChangelogEntry | null>(null);
@@ -108,6 +88,13 @@ export default function UpdateNotice() {
           >
             Got it
           </button>
+          <Link
+            href="/changelog"
+            onClick={() => setEntry(null)}
+            className="text-foreground/60 hover:text-foreground w-full py-1 text-center text-xs transition-colors"
+          >
+            See full changelog
+          </Link>
         </div>
       </div>
     </div>

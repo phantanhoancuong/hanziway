@@ -1,4 +1,4 @@
-import { CONTACT_EMAIL } from "@/app/constants";
+import { CONTACT_EMAIL } from "@/constants";
 
 export default function LicensesPage() {
   return (

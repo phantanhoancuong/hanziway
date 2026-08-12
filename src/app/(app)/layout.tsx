@@ -1,8 +1,5 @@
-import Link from "next/link";
-
-import { CURRENT_VERSION } from "@/lib";
-
 import { Header, UpdatePanel } from "@/components/client";
+import { Footer } from "@/components/server";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -12,17 +9,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         {children}
         <UpdatePanel />
       </main>
-      <footer className="border-border text-foreground/40 flex shrink-0 items-center justify-center gap-2 border-t px-6 py-1 text-xs">
-        <span>v{CURRENT_VERSION}</span>
-        <span>·</span>
-        <Link href="/privacy" className="hover:text-foreground/70">
-          Privacy
-        </Link>
-        <span>·</span>
-        <Link href="/licenses" className="hover:text-foreground/70">
-          Licenses
-        </Link>
-      </footer>
+      <Footer />
     </div>
   );
 }
