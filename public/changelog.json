@@ -1,12 +1,13 @@
 [
   {
-    "version": "1.2.0",
-    "summary": "Add compound words and phrases search.",
+    "version": "1.2.1",
+    "summary": "Add compound words and phrases search, contrast and accessibility polish",
     "added": [
       "Search compound words and short phrases, alongside single-character lookup"
     ],
     "fixed": [
-      "Better ease of use for users on mobile when checking the Update Notice"
+      "Easier to tap links in the update notice",
+      "Character cross-references are easier to spot, and now work with keyboard navigation and screen readers"
     ]
   },
   {

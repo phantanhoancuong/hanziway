@@ -42,6 +42,7 @@ export default function CompoundDetail({
             text={word}
             test={(char) => CJK_RE.test(char)}
             onCharacterClick={onCharacterClick}
+            heading
           />
         </div>
         <div className="text-foreground/60 text-lg">{match.pinyin}</div>
