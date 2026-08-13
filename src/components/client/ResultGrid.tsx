@@ -63,10 +63,14 @@ export default function ResultGrid({
           if (!character)
             return <div className="h-14" key={index} aria-hidden />;
 
+          const isCompound = [...character].length > 1;
+          const caption = captions.get(character);
+
           return (
             <button
               className={cn(
-                "bg-elevated focus-visible:ring-accent flex h-14 cursor-pointer flex-col items-center justify-center gap-0.5 rounded-sm border text-lg transition-all outline-none focus-visible:ring-2 focus-visible:ring-inset",
+                "bg-elevated focus-visible:ring-accent flex min-h-14 cursor-pointer flex-col items-center justify-center gap-0.5 rounded-sm border px-1.5 py-1.5 transition-all outline-none focus-visible:ring-2 focus-visible:ring-inset",
+                isCompound && "col-span-2",
                 selectedChar === character
                   ? "border-accent bg-accent/10 text-accent cursor-default"
                   : "border-border text-foreground/60 hover:text-foreground hover:border-foreground/30"
@@ -74,9 +78,13 @@ export default function ResultGrid({
               key={index}
               onClick={() => onSelect(character)}
             >
-              <span>{character}</span>
-              {captions.get(character) && (
-                <span className="text-xs">{captions.get(character)}</span>
+              <span className="w-full truncate text-center text-lg">
+                {character}
+              </span>
+              {caption && (
+                <span className="w-full truncate text-center text-xs">
+                  {caption}
+                </span>
               )}
             </button>
           );

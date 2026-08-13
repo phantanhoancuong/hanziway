@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import { cn, getCharactersByLevel, isPracticeCorrect } from "@/lib";
+import { cn, filterCharactersByLevel, isPracticeCorrect } from "@/lib";
 
 import {
   CangjieReferencePanel,
@@ -92,7 +92,7 @@ export default function PracticePage() {
     requestedSessionSize: number
   ): Promise<void> => {
     const requireCangjie = practiceMode === "cangjie";
-    const allCharacters = await getCharactersByLevel(
+    const allCharacters = await filterCharactersByLevel(
       hskLevels,
       tocflLevels,
       requireCangjie
