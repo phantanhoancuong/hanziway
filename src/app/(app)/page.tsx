@@ -8,22 +8,42 @@ import { Suspense } from "react";
 
 import {
   CharacterDetail,
+  CompoundDetail,
   ResultGrid,
   SearchModeToggle,
 } from "@/components/client";
 import { Icon } from "@/components/server";
 
 import {
-  CJK_RE,
   CharacterEntry,
+  CJK_RE,
   cn,
+  CompoundMatch,
   lookupCharacter,
+  lookupWord,
   searchByPinyin,
+  searchByWord,
 } from "@/lib";
 
 import { SearchMode } from "@/types";
 
 import { CopyIcon, SearchIcon, ShareIcon } from "@/assets";
+
+/** Whether the given selection is a multi-character compound rather than a single character. */
+const isCompound = (selection: string | null): boolean =>
+  selection !== null && [...selection].length > 1;
+
+/**
+ * Truncate `text` to at most `max` characters for display, appending an ellipsis if anything was cut.
+ *
+ * @param text - Text to truncate.
+ * @param max - Maximum characters to keep. Default to 12.
+ * @returns The truncated text.
+ */
+const truncateForDisplay = (text: string, max: number = 12): string => {
+  const chars = [...text];
+  return chars.length > max ? chars.slice(0, max).join("") + "…" : text;
+};
 
 export default function Home() {
   return (
@@ -36,7 +56,9 @@ export default function Home() {
 function HomeContent() {
   const [query, setQuery] = useState<string>("");
   const [results, setResults] = useState<Map<string, string> | null>(null);
-  const [entry, setEntry] = useState<CharacterEntry | null | undefined>(null);
+  const [detail, setDetail] = useState<
+    CharacterEntry | CompoundMatch | null | undefined
+  >(null);
   const [mode, setMode] = useState<SearchMode>("character");
   const [selectedChar, setSelectedChar] = useState<string | null>(null);
   const [page, setPage] = useState<number>(0);
@@ -48,37 +70,54 @@ function HomeContent() {
   const searchParams = useSearchParams();
   const hasHydrated = useRef(false);
 
+  const [resultView, setResultView] = useState<"word" | "char">("word");
+  const [searchedQuery, setSearchedQuery] = useState<string>("");
+  // True when "word" auto-downgraded to "char".
+  const [autoFellBack, setAutoFellBack] = useState<boolean>(false);
+
   /**
-   * Write `mode`/`query`/`char` to the URL directly when a search runs or mode changes.
+   * Writer `mode`/`query`/`char`/`view` to the URL when a search runs or mode changes.
    *
    * @param searchMode - Current search mode.
    * @param searchQuery - Current search text, or "" if none.
-   * @param char - Currently selected character, or `null` if none.
-   * @param push - Add a new history entry instead of replacing the current one. Use for a new search or mode switch that had an active search currently, omit (replace) otherwise.
+   * @param char - Currently selected character or compound, or `null` if none.
+   * @param push - Add a new history entry instead of replacing the current one.
+   * Use for a new search or mode switch that had an active search currently, omit (replace) otherwise.
+   * @param view - Which result type is being displayed "word" or "char".
    */
   const syncUrl = (
     searchMode: SearchMode,
     searchQuery: string,
     char: string | null,
-    push: boolean = false
+    push: boolean = false,
+    view?: "word" | "char"
   ): void => {
     const params = new URLSearchParams();
     params.set("mode", searchMode);
     if (searchQuery) params.set("query", searchQuery);
     if (char) params.set("char", char);
+    if (view) params.set("view", view);
     if (push) router.push(`?${params.toString()}`, { scroll: false });
     else router.replace(`?${params.toString()}`, { scroll: false });
   };
 
   /**
-   * Run a character search for `text`, populate `results`, and select the first result.
+   * Look up each unique character in `text` individually then populate `results` and select the first character.
    *
    * @param text - Raw text to search, filtered down to CJK characters.
    * @returns The characters found, in order.
    */
-  const runCharacterSearch = async (text: string): Promise<string[]> => {
+  const runIndividualCharacterSearch = async (
+    text: string
+  ): Promise<string[]> => {
     const filtered = [...text].filter((char) => CJK_RE.test(char)).join("");
-    if (!filtered) return [];
+    if (!filtered) {
+      setResults(new Map());
+      setSelectedChar(null);
+      setPage(0);
+      return [];
+    }
+
     const uniqueChars = [...new Set(filtered)];
     const entries = await Promise.all(
       uniqueChars.map((char) => lookupCharacter(char))
@@ -92,6 +131,76 @@ function HomeContent() {
   };
 
   /**
+   * Run a character or compound search for `text`, populate `results`, and select the first result.
+   *
+   * If `text` is a single character is looked up directly.
+   * If `text` is two or more characters search for compounds containing that sequence first;
+   * if none exists, fall back to looking up each character individually.
+   *
+   * @param text - Raw text to search, filtered down to CJK characters.
+   * @returns The characters or compound words found, in order.
+   */
+  const runCharacterSearch = async (text: string): Promise<string[]> => {
+    const filtered = [...text].filter((char) => CJK_RE.test(char)).join("");
+    if (!filtered) {
+      setResultView("word");
+      setAutoFellBack(false);
+      setResults(new Map());
+      setSelectedChar(null);
+      setPage(0);
+      return [];
+    }
+
+    const chars = [...filtered];
+    if (chars.length === 1) {
+      setResultView("word");
+      setAutoFellBack(false);
+      const entry = await lookupCharacter(filtered);
+      setResults(new Map([[filtered, entry?.r[0]?.m ?? ""]]));
+      setSelectedChar(filtered);
+      setPage(0);
+      return [filtered];
+    }
+
+    const matches = await searchByWord(filtered);
+    setSearchedQuery(filtered);
+    if (matches.length > 0) {
+      setResultView("word");
+      setAutoFellBack(false);
+      setResults(new Map(matches.map((m) => [m.word, m.pinyin])));
+      const words = matches.map((m) => m.word);
+      setSelectedChar(words[0] ?? null);
+      setPage(0);
+      return words;
+    }
+
+    setResultView("char");
+    setAutoFellBack(true);
+    return runIndividualCharacterSearch(filtered);
+  };
+
+  /** Switch between compound and individual character results for the current query, without re-running the search from the URL. */
+  const handleToggleResultView = async (): Promise<void> => {
+    if (resultView === "word") {
+      setResultView("char");
+      const foundChars = await runIndividualCharacterSearch(query);
+      if (hasHydrated.current) {
+        syncUrl(mode, query, foundChars[0] ?? null, false, "char");
+      }
+    } else {
+      const matches = await searchByWord(query);
+      setResultView("word");
+      setAutoFellBack(false);
+      setResults(new Map(matches.map((m) => [m.word, m.pinyin])));
+      setSelectedChar(matches[0]?.word ?? null);
+      setPage(0);
+      if (hasHydrated.current) {
+        syncUrl(mode, query, matches[0]?.word ?? null, false, "word");
+      }
+    }
+  };
+
+  /**
    * Run a pinyin search for `text`, populate `results`, and select the first result.
    *
    * @param text - Raw pinyin text to search, space separated per syllable/word.
@@ -100,7 +209,13 @@ function HomeContent() {
   const runPinyinSearch = async (text: string): Promise<string[]> => {
     const trimmed = text.trim();
     const words = trimmed.split(" ").filter(Boolean);
-    if (words.length === 0) return [];
+    if (words.length === 0) {
+      setResults(new Map());
+      setSelectedChar(null);
+      setPage(0);
+      return [];
+    }
+
     const resultsPerWord = await Promise.all(
       words.map((word) => searchByPinyin(word))
     );
@@ -122,24 +237,30 @@ function HomeContent() {
 
     const queryParam = searchParams.get("query");
     const charParam = searchParams.get("char");
+    const viewParam = searchParams.get("view");
 
     if (queryParam) {
       setQuery(queryParam);
 
-      const run =
-        mode === "pinyin"
-          ? runPinyinSearch(queryParam)
-          : runCharacterSearch(queryParam);
+      const run = async (): Promise<string[]> => {
+        if (mode === "pinyin") return runPinyinSearch(queryParam);
 
-      run
-        .then(() => {
-          // Prefer the requested character if it's a single CJK character.
-          const isSingleCjkChar =
+        if (viewParam === "char") {
+          setResultView("char");
+          setAutoFellBack(false);
+          return runIndividualCharacterSearch(queryParam);
+        }
+        return runCharacterSearch(queryParam);
+      };
+
+      run()
+        .then((foundChars) => {
+          const isValidCharParam =
             charParam !== null &&
-            [...charParam].length === 1 &&
-            CJK_RE.test(charParam);
-
-          if (isSingleCjkChar) setSelectedChar(charParam);
+            charParam.length > 0 &&
+            [...charParam].every((c) => CJK_RE.test(c));
+          if (isValidCharParam) setSelectedChar(charParam);
+          else if (foundChars.length === 0) setSelectedChar(null);
         })
         .finally(() => {
           hasHydrated.current = true;
@@ -156,12 +277,16 @@ function HomeContent() {
   }, []);
 
   useEffect(() => {
-    if (selectedChar === null) return setEntry(null);
-    lookupCharacter(selectedChar).then((r) => setEntry(r ?? undefined));
+    if (selectedChar === null) return setDetail(null);
+
+    const lookup = isCompound(selectedChar)
+      ? lookupWord(selectedChar)
+      : lookupCharacter(selectedChar);
+    lookup.then((r) => setDetail(r ?? undefined));
   }, [selectedChar, results]);
 
   /**
-   * Handle search mode switching, clearing the current search.
+   * Handle search mode switching.
    *
    * Flag the resulting URL update as needs pushing only if a query was already active.
    *
@@ -170,9 +295,10 @@ function HomeContent() {
   const handleSearchModeChange = (mode: SearchMode) => {
     const hadResults = results !== null;
     setMode(mode);
-    setQuery("");
     setSelectedChar(null);
     setResults(null);
+    setResultView("word");
+    setAutoFellBack(false);
     if (!hasHydrated.current) return;
     syncUrl(mode, "", null, hadResults);
   };
@@ -188,13 +314,21 @@ function HomeContent() {
     e.preventDefault();
     const trimmed = query.trim();
     if (!trimmed) return;
+
     const hadResults = results !== null;
     const foundChars =
       mode === "pinyin"
         ? await runPinyinSearch(trimmed)
         : await runCharacterSearch(trimmed);
+
     if (hasHydrated.current) {
-      syncUrl(mode, trimmed, foundChars[0] ?? null, hadResults);
+      syncUrl(
+        mode,
+        trimmed,
+        foundChars[0] ?? null,
+        hadResults,
+        mode === "character" ? resultView : undefined
+      );
     }
   };
 
@@ -227,16 +361,17 @@ function HomeContent() {
   };
 
   /**
-   * Look up the character clicked and replace the URL.
+   * Select a character or compound and replace the URL.
    *
-   * @param character - The CJK character that was clicked.
+   * @param selection - The character or compound word that was selected.
    */
-  const handleSelectChar = (character: string): void => {
-    setSelectedChar(character);
-    if (hasHydrated.current) syncUrl(mode, query, character);
+  const handleSelectChar = (selection: string): void => {
+    setSelectedChar(selection);
+    if (hasHydrated.current) syncUrl(mode, query, selection);
   };
 
   const characters = results ? [...results.keys()] : [];
+  const isMultiCharSearch = mode === "character" && [...query].length > 1;
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-2 p-3 sm:p-6">
@@ -263,7 +398,7 @@ function HomeContent() {
                   mode === "character" ? "opacity-100" : "opacity-0"
                 )}
               >
-                Look up characters . . .
+                Look up characters or words . . .
               </span>
               <span
                 className={cn(
@@ -336,7 +471,39 @@ function HomeContent() {
         )}
       </div>
 
-      {results !== null && characters.length === 0 && (
+      {results !== null && isMultiCharSearch && (
+        <div className="mt-1 flex flex-col gap-1 text-sm lg:mt-2">
+          {autoFellBack && characters.length > 0 && (
+            <p className="text-foreground/60">
+              No compound found for &ldquo;{truncateForDisplay(searchedQuery)}
+              &rdquo; — showing each character instead.
+            </p>
+          )}
+          {characters.length === 0 && (
+            <p className="text-foreground/60">No entries found</p>
+          )}
+          {resultView === "word" && characters.length > 0 && (
+            <button
+              type="button"
+              onClick={handleToggleResultView}
+              className="text-accent hover:text-accent/80 w-fit cursor-pointer text-left underline underline-offset-2"
+            >
+              Search each character instead
+            </button>
+          )}
+          {resultView === "char" && !autoFellBack && (
+            <button
+              type="button"
+              onClick={handleToggleResultView}
+              className="text-accent hover:text-accent/80 w-fit cursor-pointer text-left underline underline-offset-2"
+            >
+              Search as a compound word instead
+            </button>
+          )}
+        </div>
+      )}
+
+      {results !== null && !isMultiCharSearch && characters.length === 0 && (
         <p className="text-foreground/60 mt-1 text-sm lg:mt-2">
           No entries found
         </p>
@@ -351,13 +518,21 @@ function HomeContent() {
         onPageChange={setPage}
       />
 
-      {entry !== null && selectedChar && (
+      {detail !== null && selectedChar && (
         <div className="flex w-full flex-col gap-6 pt-10">
-          <CharacterDetail
-            character={selectedChar}
-            entry={entry}
-            onCharacterClick={handleSelectChar}
-          />
+          {isCompound(selectedChar) ? (
+            <CompoundDetail
+              word={selectedChar}
+              match={detail as CompoundMatch | undefined}
+              onCharacterClick={handleSelectChar}
+            />
+          ) : (
+            <CharacterDetail
+              character={selectedChar}
+              entry={detail as CharacterEntry | undefined}
+              onCharacterClick={handleSelectChar}
+            />
+          )}
         </div>
       )}
     </div>

@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.2.0",
+    "summary": "Add compound words and phrases search.",
+    "added": [
+      "Search compound words and short phrases, alongside single-character lookup"
+    ],
+    "fixed": [
+      "Better ease of use for users on mobile when checking the Update Notice"
+    ]
+  },
+  {
     "version": "1.1.5",
     "summary": "Pinyin practice, deep-link sharing, changelog page, and interface polish",
     "added": [

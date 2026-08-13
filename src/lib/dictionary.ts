@@ -41,7 +41,20 @@ export type CharacterEntry = {
   tocfl?: number;
 };
 
+/** A compound word matched by {@link searchByWord}. */
+export type CompoundMatch = {
+  /** The compound word. */
+  word: string;
+  /** Mandarin pinyin with diacritic tone marks. */
+  pinyin: string;
+  /** English definition. */
+  definition: string;
+};
+
 type Dictionary = Record<string, CharacterEntry>;
+
+/** A deduped index of compounds, keyed by word text. See {@link getCompoundIndex}. */
+type CompoundIndex = Map<string, CompoundMatch>;
 
 let dictionary: Dictionary | null = null;
 
@@ -71,14 +84,14 @@ export const lookupCharacter = async (
 };
 
 /**
- * Get all characters matching the given HSK and TOCFL levels.
+ * Filter characters matching the given HSK and TOCFL levels.
  *
  * @param hskLevels - HSK levels to include (1-9).
  * @param tocflLevels - TOCFL levels to include (1-6).
  * @param requireCangjie - If true, only include characters that have a Cangjie code. Defaults to true.
  * @returns Array of matching character entries with their characters.
  */
-export const getCharactersByLevel = async (
+export const filterCharactersByLevel = async (
   hskLevels: number[],
   tocflLevels: number[],
   requireCangjie: boolean = true
@@ -97,8 +110,87 @@ export const getCharactersByLevel = async (
     .map(([char, entry]) => ({ char, entry }));
 };
 
+let compoundIndex: CompoundIndex | null = null;
+
 /**
- * Match a single CJK ideograph.
- * Use with single characters only.
+ * Build and cache a deduped index of every compound in the dictionary, keyed by word text.
+ *
+ * @returns Promise resolving to the compound index.
  */
+const getCompoundIndex = async (): Promise<CompoundIndex> => {
+  if (compoundIndex) return compoundIndex;
+
+  const dict = await getDictionary();
+  const index: CompoundIndex = new Map();
+
+  for (const entry of Object.values(dict)) {
+    if (!entry.cp) continue;
+    for (const [word, pinyin, definition] of entry.cp) {
+      if (!index.has(word)) index.set(word, { word, pinyin, definition });
+    }
+  }
+
+  compoundIndex = index;
+  return compoundIndex;
+};
+
+/**
+ * Look up a single compound by its exact word text.
+ *
+ * @param word - The compound word to look up.
+ * @returns The compound match, or `null` if not found.
+ */
+export const lookupWord = async (
+  word: string
+): Promise<CompoundMatch | null> => {
+  const index = await getCompoundIndex();
+  return index.get(word) ?? null;
+};
+
+/**
+ * Strip everything except CJK characters from `text` (used in proverbs with punctuation marks).
+ *
+ * @param text - Text to strip.
+ * @returns Only the CJK characters from `text`, in order.
+ */
+const stripToCjk = (text: string): string =>
+  [...text].filter((char) => CJK_RE.test(char)).join("");
+
+/**
+ * Search compounds by character sequence then rank by tier:
+ * 1. Exact match.
+ * 2. `query` starts with the found `word`.
+ * 3. The found `word` starts with `query.
+ * 4. Any other overlap.
+ * Shorter words rank first within the same tier.
+ *
+ * @param query - Character sequence to search for (2+ characters).
+ * @returns Array of mathcing compounds, most relevant first.
+ */
+export const searchByWord = async (query: string): Promise<CompoundMatch[]> => {
+  const index = await getCompoundIndex();
+
+  const matchRank = (word: string): number => {
+    if (word === query) return 0;
+    if (query.startsWith(word)) return 1;
+    if (word.startsWith(query)) return 2;
+    return 3;
+  };
+
+  return [...index.values()]
+    .filter((match) => {
+      const normalized = stripToCjk(match.word);
+
+      if (normalized.length === 0) return false;
+      return normalized.includes(query) || query.includes(normalized);
+    })
+    .sort((a, b) => {
+      const rankA = matchRank(stripToCjk(a.word));
+      const rankB = matchRank(stripToCjk(b.word));
+      if (rankA !== rankB) return rankA - rankB;
+      return a.word.length - b.word.length;
+    });
+};
+
+/** Match a CJK character. Use with single characters only. */
 export const CJK_RE = /[\u4e00-\u9fff\u3400-\u4dbf\uf900-\ufaff]/u;

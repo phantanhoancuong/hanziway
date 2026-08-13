@@ -81,7 +81,7 @@ export default function UpdateNotice() {
           ))}
         </div>
 
-        <div className="p-6 pt-4">
+        <div className="flex flex-col gap-1 p-6 pt-4">
           <button
             className="bg-accent text-background w-full cursor-pointer rounded-xl py-2.5 text-sm font-semibold transition-opacity hover:opacity-90"
             onClick={() => setEntry(null)}
@@ -91,7 +91,7 @@ export default function UpdateNotice() {
           <Link
             href="/changelog"
             onClick={() => setEntry(null)}
-            className="text-foreground/60 hover:text-foreground w-full py-1 text-center text-xs transition-colors"
+            className="text-foreground/60 hover:text-foreground focus-visible:ring-accent flex w-full items-center justify-center rounded-lg py-3 text-center text-xs transition-colors outline-none focus-visible:ring-2"
           >
             See full changelog
           </Link>
