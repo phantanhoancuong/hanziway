@@ -49,7 +49,7 @@ export default function UpdatePanel() {
   if (!waitingWorker || dismissed) return null;
 
   return (
-    <div className="bg-background/90 absolute inset-0 z-40 flex flex-col items-center justify-center gap-4 p-6 text-center backdrop-blur-sm">
+    <div className="bg-background/90 fixed inset-0 z-40 flex flex-col items-center justify-center gap-4 p-6 text-center backdrop-blur-sm">
       <h2 className="text-foreground text-lg font-semibold">
         A new version is available
       </h2>
