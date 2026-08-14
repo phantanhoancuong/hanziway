@@ -1,5 +1,7 @@
 "use client";
 
+import { Fragment } from "react";
+
 import { pinyinToZhuyin } from "pinyin-zhuyin";
 
 import { Icon } from "@/components/server";
@@ -7,6 +9,7 @@ import { Icon } from "@/components/server";
 import { LETTER_TO_KEY, glyphTree } from "@/lib";
 
 import { PracticeChar } from "@/types";
+
 const CangjieReferencePanel = ({
   currentChar,
   onClose,
@@ -20,15 +23,15 @@ const CangjieReferencePanel = ({
         <div className="flex items-center justify-between">
           <h1 className="text-lg font-medium">Key References</h1>
           <button
-            className="text-foreground/40 border-border bg-elevated hover:bg-foreground/5 cursor-pointer rounded-sm border-2 px-2 py-1 text-sm"
+            className="text-foreground border-border bg-elevated hover:bg-foreground/5 hover:border-foreground/30 focus-visible:ring-accent cursor-pointer rounded-sm border px-2 py-1 text-sm transition-all outline-none focus-visible:ring-2 focus-visible:ring-inset"
             onClick={onClose}
           >
             Close
           </button>
         </div>
 
-        <div className="border-foreground/10 mt-2 flex w-fit items-center gap-3 rounded-sm border-2 px-3 py-2 lg:hidden">
-          <span className="text-foreground/40 text-xs font-semibold tracking-wider uppercase">
+        <div className="border-border mt-2 flex w-fit items-center gap-3 rounded-sm border-2 px-3 py-2 lg:hidden">
+          <span className="text-foreground/60 text-xs font-semibold tracking-wider uppercase">
             Current
           </span>
           <span className="text-3xl leading-none font-light">
@@ -46,15 +49,12 @@ const CangjieReferencePanel = ({
       <div className="mt-4 flex flex-col gap-6">
         {Object.entries(glyphTree).map(([letter, groups]) => (
           <div key={letter} className="flex flex-col gap-2">
-            <span className="text-foreground/40 pl-2 text-base font-semibold tracking-wider uppercase">
+            <span className="text-foreground/60 pl-2 text-base font-semibold tracking-wider uppercase">
               {letter} {`(${LETTER_TO_KEY.get(letter)!.radical})`}
             </span>
-            <div className="flex flex-wrap gap-1.5">
+            <div className="flex flex-wrap items-center gap-1.5">
               {Object.entries(groups).map(([group, svgs], i, arr) => (
-                <div
-                  key={group}
-                  className="flex flex-wrap items-center gap-1.5"
-                >
+                <Fragment key={group}>
                   {svgs.map((src, index) =>
                     src ? (
                       <div
@@ -68,7 +68,7 @@ const CangjieReferencePanel = ({
                   {i < arr.length - 1 && (
                     <div className="bg-border mx-1 h-6 w-px" />
                   )}
-                </div>
+                </Fragment>
               ))}
             </div>
           </div>

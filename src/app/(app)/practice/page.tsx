@@ -81,6 +81,8 @@ export default function PracticePage() {
    *
    * Map each entry into `PracticeChar` and advance `phase` to "practice".
    *
+   * Do nothing if no characters match the selected levels, to avoid starting a session with an empty pool.
+   *
    * @param hskLevels - Selected HSK level numbers (1 to 7).
    * @param tocflLevels - Selected TOCFL level numbers (1 to 6).
    * @param requestedSessionSize - Number of characters to include in the session, as chosen in `LevelSelector`.
@@ -97,6 +99,8 @@ export default function PracticePage() {
       tocflLevels,
       requireCangjie
     );
+    if (allCharacters.length === 0) return;
+
     const characters = shuffle(allCharacters, requestedSessionSize);
     setSessionIndex(0);
     setSession(

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { pinyinToZhuyin } from "pinyin-zhuyin";
 
@@ -37,13 +37,20 @@ const PracticePanel = ({
 }) => {
   const [inputShake, setInputShake] = useState<boolean>(false);
   const [inputText, setInputText] = useState<string>("");
+  const shakeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   /** Trigger the input slots' shake animation to signal invalid input. */
   const shakeInput = (): void => {
     if (inputShake) return;
     setInputShake(true);
-    setTimeout(() => setInputShake(false), 500);
+    shakeTimeoutRef.current = setTimeout(() => setInputShake(false), 500);
   };
+
+  useEffect(() => {
+    return () => {
+      if (shakeTimeoutRef.current) clearTimeout(shakeTimeoutRef.current);
+    };
+  }, []);
 
   /** Remove the last typed letter, or shake the input if it's already empty. */
   const handleBackspace = (): void => {
@@ -77,13 +84,15 @@ const PracticePanel = ({
   };
 
   useEffect(() => {
-    if (isReferenceOpen) return;
     /**
      * Route the keydown event to the matching handler.
+     *
+     * Route any keydown with a modifier held (Ctrl, Alt, etc.) so browser/OS shortcuts aren't interpreted as letter input.
      *
      * @param e - The keyboard event.
      */
     const onKeyDown = (e: KeyboardEvent): void => {
+      if (e.ctrlKey || e.altKey || e.metaKey) return;
       const key = e.key.toUpperCase();
       if (key === "BACKSPACE") return handleBackspace();
       if (key === "ENTER") return handleEnter();
@@ -92,7 +101,7 @@ const PracticePanel = ({
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [inputText, isReferenceOpen]);
+  }, [inputText]);
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-4">
@@ -124,10 +133,10 @@ const PracticePanel = ({
                 className="border-border flex min-h-16 w-[20%] flex-col items-center justify-center border-2 p-2 text-nowrap"
                 key={index}
               >
-                <span className="flex flex-2 items-center text-sm">
+                <span className="flex flex-1 items-center text-sm">
                   {inputText[index]}
                 </span>
-                <span className="text-foreground/40 flex flex-1 items-center text-xs">
+                <span className="text-foreground/60 flex flex-1 items-center text-xs">
                   {LETTER_TO_KEY.get(inputText[index])?.radical}
                 </span>
               </div>
@@ -138,8 +147,9 @@ const PracticePanel = ({
 
       <div className="flex shrink-0 flex-col gap-1 p-2 lg:px-6">
         <button
-          className="text-foreground/40 border-border bg-elevated hover:bg-foreground/5 m-1.5 mr-0 cursor-pointer self-end border-2 px-1.5 py-0.5 pr-0"
+          className="text-foreground border-border bg-elevated hover:bg-foreground/5 hover:border-foreground/30 focus-visible:ring-accent m-1.5 mr-0 cursor-pointer self-end rounded-sm border px-1.5 py-0.5 pr-0 transition-all outline-none focus-visible:ring-2 focus-visible:ring-inset"
           onClick={onToggleReferenceOpen}
+          aria-expanded={isReferenceOpen}
         >
           <span className="flex items-center gap-1">
             Key References

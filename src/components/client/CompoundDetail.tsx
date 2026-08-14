@@ -27,7 +27,6 @@ export default function CompoundDetail({
         return [char, entry?.r[0]?.m ?? ""] as const;
       })
     ).then((pairs) => setCharPinyin(new Map(pairs)));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [word]);
 
   if (!match) {
