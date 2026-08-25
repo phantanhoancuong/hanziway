@@ -5,4 +5,5 @@ export * from "./cn";
 export * from "./dictionary";
 export * from "./pinyin";
 export * from "./practice";
+export * from "./recognizer";
 export * from "./version";

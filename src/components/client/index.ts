@@ -5,6 +5,7 @@ export { default as CharacterDetail } from "./CharacterDetail";
 export { default as CharacterWriter } from "./CharacterWriter";
 export { default as ClickableCharacters } from "./ClickableCharacters";
 export { default as ControlKey } from "./ControlKey";
+export { default as DrawingCanvas } from "./DrawingCanvas";
 export { default as Header } from "./Header";
 export { default as LetterKey } from "./LetterKey";
 export { default as LevelSelector } from "./LevelSelector";
