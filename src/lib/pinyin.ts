@@ -26,34 +26,40 @@ const U_TONE_MAP: Record<string, string> = {
 };
 
 /**
- * Split a pinyin syllable into its toneless spelling and tone number.
+ * Split a pinyin syllable into its toneless spelling, tone number, and whether a tone was specified.
  *
- * ü (and its toned forms) is converted to "v" (plus its tone digit, if any) before diacritic stripping, since ü's mark decomposes into
- * the same Unicode block as tone marks and would otherwise be silently stripped along with them, merging ü and u.
+ * ü (and its toned forms) is converted to "v" (plus its tone digit, if any) before diacritic stripping.
+ * Since ü's mark decomposes into the same Unicode block as tone marks and would otherwise be silently stripped along with them, merging ü and u.
  *
  * @param pinyin - A pinyin syllable with or without diacritics, "v" for ü, or a trailing tone digit (1-5).
- * @returns The toneless, lowercase spelling and its tone ("1"-"4", or "5" for neutral).
+ * @returns The toneless, lowercase spelling, its tone ("1"-"4", or "5" for neutral), and if a tone was specified.
  */
 const decomposePinyin = (
   pinyin: string
-): { toneless: string; tone: string } => {
+): { toneless: string; tone: string; hasExplicitTone: boolean } => {
   const withV = pinyin.toLowerCase().replace(/[üǖǘǚǜ]/g, (m) => U_TONE_MAP[m]);
   const withoutDigit = withV.replace(/[1-5]$/, "");
   const decomposed = withoutDigit.normalize("NFD");
 
   let tone = "5";
+  let hasExplicitTone = false;
+
   for (const [mark, t] of Object.entries(TONE_MARKS)) {
     if (decomposed.includes(mark)) {
       tone = t;
+      hasExplicitTone = true;
       break;
     }
   }
 
   const explicitDigit = withV.match(/[1-5]$/)?.[0];
-  if (explicitDigit) tone = explicitDigit;
+  if (explicitDigit) {
+    tone = explicitDigit;
+    hasExplicitTone = true;
+  }
 
   const toneless = decomposed.replace(/[\u0300-\u036f]/g, "");
-  return { toneless, tone };
+  return { toneless, tone, hasExplicitTone };
 };
 
 // Keyed by toneless syllable, then by tone number ("1"-"5").
@@ -100,10 +106,8 @@ export const searchByPinyin = async (
 ): Promise<{ char: string; entry: CharacterEntry }[]> => {
   const map = await getPinyinMap();
   const dict = await getDictionary();
+  const { toneless, tone, hasExplicitTone } = decomposePinyin(pinyin);
 
-  const hasExplicitTone =
-    /[1-5]$/.test(pinyin) || pinyin !== decomposePinyin(pinyin).toneless;
-  const { toneless, tone } = decomposePinyin(pinyin);
   const toneMap = map[toneless] ?? {};
 
   const chars = hasExplicitTone

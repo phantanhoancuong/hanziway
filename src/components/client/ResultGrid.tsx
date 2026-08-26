@@ -2,10 +2,7 @@
 
 import { cn } from "@/lib";
 
-const GRID_COLS = { base: 4, sm: 6, lg: 8 };
-const ROWS_PER_PAGE = 3;
-const PAGE_SIZE = GRID_COLS.lg * ROWS_PER_PAGE;
-const PAGE_SLOTS = 7;
+import { PAGE_SLOTS, PAGE_SIZE } from "@/constants";
 
 /**
  * Build a page list with ellipsis gaps e.g. [0, "…", 3, 4, 5, "…", 27].
