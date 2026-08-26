@@ -1,1 +1,1 @@
-export type SearchMode = "character" | "pinyin";
+export type SearchMode = "character" | "pinyin" | "draw";

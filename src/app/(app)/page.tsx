@@ -9,6 +9,7 @@ import { Suspense } from "react";
 import {
   CharacterDetail,
   CompoundDetail,
+  DrawingCanvas,
   ResultGrid,
   SearchModeToggle,
 } from "@/components/client";
@@ -21,6 +22,8 @@ import {
   CompoundMatch,
   lookupCharacter,
   lookupWord,
+  preloadRecognizer,
+  recognizeCharacter,
   searchByPinyin,
   searchByWord,
 } from "@/lib";
@@ -28,6 +31,8 @@ import {
 import { SearchMode } from "@/types";
 
 import { CopyIcon, SearchIcon, ShareIcon } from "@/assets";
+
+import { PAGE_SIZE } from "@/constants";
 
 /** Whether the given selection is a multi-character compound rather than a single character. */
 const isCompound = (selection: string | null): boolean =>
@@ -37,12 +42,176 @@ const isCompound = (selection: string | null): boolean =>
  * Truncate `text` to at most `max` characters for display, appending an ellipsis if anything was cut.
  *
  * @param text - Text to truncate.
- * @param max - Maximum characters to keep. Default to 12.
+ * @param max - Maximum characters to keep. Default to `12`.
  * @returns The truncated text.
  */
 const truncateForDisplay = (text: string, max: number = 12): string => {
   const chars = [...text];
   return chars.length > max ? chars.slice(0, max).join("") + "…" : text;
+};
+
+/**
+ * Whether a `char` URL param is a non-empty, all-CJK string.
+ *
+ * @param charParam - The raw "char" URL param, or `null` if absent.
+ * @returns Whether it's safe to use as a restored selection.
+ */
+const isValidCjkCharParam = (charParam: string | null): charParam is string =>
+  charParam !== null &&
+  charParam.length > 0 &&
+  [...charParam].every((c) => CJK_RE.test(c));
+
+/**
+ * Build a `results` Map and derive the character list and first selection from an ordered list of `[character, caption]` pairs.
+ *
+ * Callers use the returned values to populate results, select the first match, and reset the page.
+ *
+ * @param entries - Ordered `[character, caption]` pairs.
+ * @returns The results Map, the first character to select (or `null` if empty), and the character list in order.
+ */
+const buildResultsFromEntries = (
+  entries: [string, string][]
+): {
+  resultsMap: Map<string, string>;
+  selectedChar: string | null;
+  chars: string[];
+} => {
+  const chars = entries.map(([char]) => char);
+  return {
+    resultsMap: new Map(entries),
+    selectedChar: chars[0] ?? null,
+    chars,
+  };
+};
+
+/** Status messages shown below the drawing canvas in Draw mode. */
+const DrawModeStatus = ({
+  isModelLoading,
+  isRecognizing,
+  recognizeFailed,
+  hasEmptyResults,
+}: {
+  isModelLoading: boolean;
+  isRecognizing: boolean;
+  recognizeFailed: boolean;
+  hasEmptyResults: boolean;
+}) => {
+  if (isModelLoading && !isRecognizing) {
+    return (
+      <div className="mt-1 flex flex-col items-center gap-2 lg:mt-2">
+        <svg
+          className="text-accent size-6 animate-spin"
+          viewBox="0 0 24 24"
+          fill="none"
+          aria-hidden="true"
+        >
+          <circle
+            className="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            strokeWidth="4"
+          />
+          <path
+            className="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+          />
+        </svg>
+        <p className="text-foreground/60 text-center text-sm">
+          Getting ready — this may take a moment the first time...
+        </p>
+      </div>
+    );
+  }
+  if (isRecognizing) {
+    return (
+      <p className="text-foreground/60 mt-1 text-center text-sm lg:mt-2">
+        Recognizing...
+      </p>
+    );
+  }
+  if (recognizeFailed) {
+    return (
+      <p className="text-foreground/60 mt-1 text-center text-sm lg:mt-2">
+        Couldn&apos;t recognize that — try drawing again.
+      </p>
+    );
+  }
+  if (hasEmptyResults) {
+    return (
+      <p className="text-foreground/60 mt-1 text-center text-sm lg:mt-2">
+        No matches found — try drawing again.
+      </p>
+    );
+  }
+  return null;
+};
+
+/** Status messages shown below the search bar in Char/Pinyin modes. */
+const SearchModeStatus = ({
+  isMultiCharSearch,
+  hasResults,
+  autoFellBack,
+  characters,
+  searchedQuery,
+  resultView,
+  onToggleResultView,
+}: {
+  isMultiCharSearch: boolean;
+  hasResults: boolean;
+  autoFellBack: boolean;
+  characters: string[];
+  searchedQuery: string;
+  resultView: "word" | "char";
+  onToggleResultView: () => void;
+}) => {
+  if (!hasResults) return null;
+
+  if (isMultiCharSearch) {
+    return (
+      <div className="mt-1 flex flex-col gap-1 text-sm lg:mt-2">
+        {autoFellBack && characters.length > 0 && (
+          <p className="text-foreground/60">
+            No compound found for &ldquo;{truncateForDisplay(searchedQuery)}
+            &rdquo; — showing each character instead.
+          </p>
+        )}
+        {characters.length === 0 && (
+          <p className="text-foreground/60">No entries found</p>
+        )}
+        {resultView === "word" && characters.length > 0 && (
+          <button
+            type="button"
+            onClick={onToggleResultView}
+            className="text-accent hover:text-accent/80 w-fit cursor-pointer text-left underline underline-offset-2"
+          >
+            Search each character instead
+          </button>
+        )}
+        {resultView === "char" && !autoFellBack && (
+          <button
+            type="button"
+            onClick={onToggleResultView}
+            className="text-accent hover:text-accent/80 w-fit cursor-pointer text-left underline underline-offset-2"
+          >
+            Search as a compound word instead
+          </button>
+        )}
+      </div>
+    );
+  }
+
+  if (characters.length === 0) {
+    return (
+      <p className="text-foreground/60 mt-1 text-sm lg:mt-2">
+        No entries found
+      </p>
+    );
+  }
+
+  return null;
 };
 
 export default function Home() {
@@ -65,6 +234,9 @@ function HomeContent() {
   const [shareCopied, setShareCopied] = useState<boolean>(false);
   const [copyFailed, setCopyFailed] = useState<boolean>(false);
   const [canNativeShare, setCanNativeShare] = useState<boolean>(false);
+  const [isRecognizing, setIsRecognizing] = useState<boolean>(false);
+  const [isModelLoading, setIsModelLoading] = useState<boolean>(false);
+  const [recognizeFailed, setRecognizeFailed] = useState<boolean>(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -76,7 +248,7 @@ function HomeContent() {
   const [autoFellBack, setAutoFellBack] = useState<boolean>(false);
 
   /**
-   * Writer `mode`/`query`/`char`/`view` to the URL when a search runs or mode changes.
+   * Write `mode`/`query`/`char`/`view` to the URL when a search runs or mode changes.
    *
    * @param searchMode - Current search mode.
    * @param searchQuery - Current search text, or "" if none.
@@ -122,12 +294,13 @@ function HomeContent() {
     const entries = await Promise.all(
       uniqueChars.map((char) => lookupCharacter(char))
     );
-    setResults(
-      new Map(uniqueChars.map((char, i) => [char, entries[i]?.r[0]?.m ?? ""]))
+    const { resultsMap, selectedChar, chars } = buildResultsFromEntries(
+      uniqueChars.map((char, i) => [char, entries[i]?.r[0]?.m ?? ""])
     );
-    setSelectedChar(uniqueChars[0] ?? null);
+    setResults(resultsMap);
+    setSelectedChar(selectedChar);
     setPage(0);
-    return uniqueChars;
+    return chars;
   };
 
   /**
@@ -156,10 +329,11 @@ function HomeContent() {
       setResultView("word");
       setAutoFellBack(false);
       const entry = await lookupCharacter(filtered);
-      setResults(new Map([[filtered, entry?.r[0]?.m ?? ""]]));
-      setSelectedChar(filtered);
+      const built = buildResultsFromEntries([[filtered, entry?.r[0]?.m ?? ""]]);
+      setResults(built.resultsMap);
+      setSelectedChar(built.selectedChar);
       setPage(0);
-      return [filtered];
+      return built.chars;
     }
 
     const matches = await searchByWord(filtered);
@@ -167,11 +341,13 @@ function HomeContent() {
     if (matches.length > 0) {
       setResultView("word");
       setAutoFellBack(false);
-      setResults(new Map(matches.map((m) => [m.word, m.pinyin])));
-      const words = matches.map((m) => m.word);
-      setSelectedChar(words[0] ?? null);
+      const built = buildResultsFromEntries(
+        matches.map((m) => [m.word, m.pinyin])
+      );
+      setResults(built.resultsMap);
+      setSelectedChar(built.selectedChar);
       setPage(0);
-      return words;
+      return built.chars;
     }
 
     setResultView("char");
@@ -191,11 +367,14 @@ function HomeContent() {
       const matches = await searchByWord(query);
       setResultView("word");
       setAutoFellBack(false);
-      setResults(new Map(matches.map((m) => [m.word, m.pinyin])));
-      setSelectedChar(matches[0]?.word ?? null);
+      const built = buildResultsFromEntries(
+        matches.map((m) => [m.word, m.pinyin])
+      );
+      setResults(built.resultsMap);
+      setSelectedChar(built.selectedChar);
       setPage(0);
       if (hasHydrated.current) {
-        syncUrl(mode, query, matches[0]?.word ?? null, false, "word");
+        syncUrl(mode, query, built.selectedChar, false, "word");
       }
     }
   };
@@ -220,25 +399,72 @@ function HomeContent() {
       words.map((word) => searchByPinyin(word))
     );
     const flatResults = resultsPerWord.flat();
-    setResults(
-      new Map(flatResults.map((r) => [r.char, r.entry.r[0]?.m ?? ""]))
+    const built = buildResultsFromEntries(
+      flatResults.map((r) => [r.char, r.entry.r[0]?.m ?? ""])
     );
-    const chars = flatResults.map((r) => r.char);
-    setSelectedChar(chars[0] ?? null);
+    setResults(built.resultsMap);
+    setSelectedChar(built.selectedChar);
     setPage(0);
-    return chars;
+    return built.chars;
+  };
+
+  /**
+   * Run recognition on a hand drawn character and populate `results` with ranked candidates.
+   *
+   * @param canvas - The canvas the character was drawn on.
+   */
+  const handleRecognize = async (canvas: HTMLCanvasElement): Promise<void> => {
+    setIsRecognizing(true);
+    setRecognizeFailed(false);
+    try {
+      const candidates = await recognizeCharacter(canvas, PAGE_SIZE);
+      if (candidates.length === 0) {
+        setResults(new Map());
+        setSelectedChar(null);
+        setPage(0);
+        return;
+      }
+      const entries = await Promise.all(
+        candidates.map((c) => lookupCharacter(c.character))
+      );
+      const built = buildResultsFromEntries(
+        candidates.map((c, i) => [c.character, entries[i]?.r[0]?.m ?? ""])
+      );
+      setResults(built.resultsMap);
+      setSelectedChar(built.selectedChar);
+      setPage(0);
+      if (hasHydrated.current) {
+        syncUrl(mode, "", built.selectedChar);
+      }
+    } catch (err) {
+      console.error("Recognition failed:", err);
+      setRecognizeFailed(true);
+    } finally {
+      setIsRecognizing(false);
+    }
   };
 
   /** On mount, restore mode/query/char from the URL and run the search. */
   useEffect(() => {
     const modeParam = searchParams.get("mode");
-    const mode: SearchMode = modeParam === "pinyin" ? "pinyin" : "character";
+    const mode: SearchMode =
+      modeParam === "pinyin"
+        ? "pinyin"
+        : modeParam === "draw"
+          ? "draw"
+          : "character";
     setMode(mode);
 
     const queryParam = searchParams.get("query");
     const charParam = searchParams.get("char");
     const viewParam = searchParams.get("view");
-
+    if (mode === "draw") {
+      setIsModelLoading(true);
+      preloadRecognizer().finally(() => setIsModelLoading(false));
+      if (isValidCjkCharParam(charParam)) setSelectedChar(charParam);
+      hasHydrated.current = true;
+      return;
+    }
     if (queryParam) {
       setQuery(queryParam);
 
@@ -255,11 +481,7 @@ function HomeContent() {
 
       run()
         .then((foundChars) => {
-          const isValidCharParam =
-            charParam !== null &&
-            charParam.length > 0 &&
-            [...charParam].every((c) => CJK_RE.test(c));
-          if (isValidCharParam) setSelectedChar(charParam);
+          if (isValidCjkCharParam(charParam)) setSelectedChar(charParam);
           else if (foundChars.length === 0) setSelectedChar(null);
         })
         .finally(() => {
@@ -299,6 +521,11 @@ function HomeContent() {
     setResults(null);
     setResultView("word");
     setAutoFellBack(false);
+    setRecognizeFailed(false);
+    if (mode === "draw") {
+      setIsModelLoading(true);
+      preloadRecognizer().finally(() => setIsModelLoading(false));
+    }
     if (!hasHydrated.current) return;
     syncUrl(mode, "", null, hadResults);
   };
@@ -375,66 +602,8 @@ function HomeContent() {
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-2 p-3 sm:p-6">
-      <form
-        className="bg-elevated border-border focus-within:border-accent focus-within:ring-accent/15 [&:hover:not(:focus-within)]:border-foreground/30 flex items-center gap-2 rounded-full border py-1.5 pr-1.5 pl-4 transition-all duration-350 focus-within:ring-4"
-        onSubmit={handleSubmit}
-      >
-        <div
-          className="relative flex h-full min-w-0 flex-1 cursor-text items-center"
-          onClick={() => inputRef.current?.focus()}
-        >
-          <input
-            ref={inputRef}
-            className="text-foreground h-full w-full cursor-text bg-transparent outline-none"
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-          />
-          {!query && (
-            <div className="pointer-events-none absolute inset-0 flex items-center overflow-hidden">
-              <span
-                className={cn(
-                  "text-foreground/60 absolute transition-opacity duration-350",
-                  mode === "character" ? "opacity-100" : "opacity-0"
-                )}
-              >
-                Look up characters or words . . .
-              </span>
-              <span
-                className={cn(
-                  "text-foreground/60 absolute transition-opacity duration-350",
-                  mode === "pinyin" ? "opacity-100" : "opacity-0"
-                )}
-              >
-                Look up pinyin . . .
-              </span>
-            </div>
-          )}
-        </div>
-
-        {query && (
-          <button
-            type="button"
-            aria-label="Clear search"
-            onClick={handleClearInput}
-            className="text-foreground/60 hover:text-foreground focus-visible:ring-accent flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-full transition-colors outline-none focus-visible:ring-2"
-          >
-            ✕
-          </button>
-        )}
-
-        <button
-          type="submit"
-          aria-label="Search"
-          className="bg-accent text-background focus-visible:ring-accent focus-visible:ring-offset-background flex size-10 shrink-0 cursor-pointer items-center justify-center rounded-full transition-all duration-100 outline-none hover:opacity-90 focus-visible:ring-2 focus-visible:ring-offset-2 active:scale-90"
-        >
-          <Icon src={SearchIcon} />
-        </button>
-      </form>
-
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <SearchModeToggle mode={mode} onChange={handleSearchModeChange} />
-
         {results !== null && (
           <div className="flex items-center gap-1.5 self-start sm:self-auto">
             {canNativeShare && (
@@ -450,7 +619,6 @@ function HomeContent() {
                 <span className="flex-1 text-center">Share</span>
               </button>
             )}
-
             <button
               type="button"
               aria-label="Copy link to this search"
@@ -470,43 +638,89 @@ function HomeContent() {
           </div>
         )}
       </div>
-
-      {results !== null && isMultiCharSearch && (
-        <div className="mt-1 flex flex-col gap-1 text-sm lg:mt-2">
-          {autoFellBack && characters.length > 0 && (
-            <p className="text-foreground/60">
-              No compound found for &ldquo;{truncateForDisplay(searchedQuery)}
-              &rdquo; — showing each character instead.
-            </p>
-          )}
-          {characters.length === 0 && (
-            <p className="text-foreground/60">No entries found</p>
-          )}
-          {resultView === "word" && characters.length > 0 && (
-            <button
-              type="button"
-              onClick={handleToggleResultView}
-              className="text-accent hover:text-accent/80 w-fit cursor-pointer text-left underline underline-offset-2"
-            >
-              Search each character instead
-            </button>
-          )}
-          {resultView === "char" && !autoFellBack && (
-            <button
-              type="button"
-              onClick={handleToggleResultView}
-              className="text-accent hover:text-accent/80 w-fit cursor-pointer text-left underline underline-offset-2"
-            >
-              Search as a compound word instead
-            </button>
-          )}
+      {mode === "draw" ? (
+        <div className="py-4">
+          <DrawingCanvas onRecognize={handleRecognize} />
         </div>
+      ) : (
+        <form
+          className="bg-elevated border-border focus-within:border-accent focus-within:ring-accent/15 [&:hover:not(:focus-within)]:border-foreground/30 flex items-center gap-2 rounded-full border py-1.5 pr-1.5 pl-4 transition-all duration-350 focus-within:ring-4"
+          onSubmit={handleSubmit}
+        >
+          <div
+            className="relative flex h-full min-w-0 flex-1 cursor-text items-center"
+            onClick={() => inputRef.current?.focus()}
+          >
+            <input
+              ref={inputRef}
+              className="text-foreground h-full w-full cursor-text bg-transparent outline-none"
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+            />
+            {!query && (
+              <div className="pointer-events-none absolute inset-0 flex items-center overflow-hidden">
+                <span
+                  className={cn(
+                    "text-foreground/60 absolute transition-opacity duration-350",
+                    mode === "character" ? "opacity-100" : "opacity-0"
+                  )}
+                >
+                  Look up characters or words . . .
+                </span>
+                <span
+                  className={cn(
+                    "text-foreground/60 absolute transition-opacity duration-350",
+                    mode === "pinyin" ? "opacity-100" : "opacity-0"
+                  )}
+                >
+                  Look up pinyin . . .
+                </span>
+              </div>
+            )}
+          </div>
+          {query && (
+            <button
+              type="button"
+              aria-label="Clear search"
+              onClick={handleClearInput}
+              className="text-foreground/60 hover:text-foreground focus-visible:ring-accent flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-full transition-colors outline-none focus-visible:ring-2"
+            >
+              ✕
+            </button>
+          )}
+          <button
+            type="submit"
+            aria-label="Search"
+            className="bg-accent text-background focus-visible:ring-accent focus-visible:ring-offset-background flex size-10 shrink-0 cursor-pointer items-center justify-center rounded-full transition-all duration-100 outline-none hover:opacity-90 focus-visible:ring-2 focus-visible:ring-offset-2 active:scale-90"
+          >
+            <Icon src={SearchIcon} />
+          </button>
+        </form>
       )}
-
-      {results !== null && !isMultiCharSearch && characters.length === 0 && (
-        <p className="text-foreground/60 mt-1 text-sm lg:mt-2">
-          No entries found
-        </p>
+      {mode === "draw" && (
+        <DrawModeStatus
+          isModelLoading={isModelLoading}
+          isRecognizing={isRecognizing}
+          recognizeFailed={recognizeFailed}
+          hasEmptyResults={
+            results !== null &&
+            characters.length === 0 &&
+            !isRecognizing &&
+            !recognizeFailed
+          }
+        />
+      )}
+      {mode !== "draw" && (
+        <SearchModeStatus
+          isMultiCharSearch={isMultiCharSearch}
+          hasResults={results !== null}
+          autoFellBack={autoFellBack}
+          characters={characters}
+          searchedQuery={searchedQuery}
+          resultView={resultView}
+          onToggleResultView={handleToggleResultView}
+        />
       )}
 
       <ResultGrid

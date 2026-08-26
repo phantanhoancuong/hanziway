@@ -1,6 +1,6 @@
 {
   "name": "hanziway",
-  "version": "1.2.3",
+  "version": "1.3.0",
   "private": true,
   "scripts": {
     "predev": "node scripts/generate-icon-index.mjs src/assets/auxiliary_glyphs && node scripts/generate-sw.mjs",
@@ -15,6 +15,7 @@
     "hangul-romanization": "^1.0.1",
     "hanzi-writer": "^3.7.3",
     "next": "^16.2.6",
+    "onnxruntime-web": "^1.27.0",
     "pinyin-zhuyin": "^1.0.4",
     "react": "19.2.4",
     "react-dom": "19.2.4",

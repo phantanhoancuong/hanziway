@@ -1,15 +1,29 @@
 [
   {
-    "version": "1.2.1",
+    "version": "1.3.0",
+    "summary": "Add Draw-to-search",
+    "added": [
+      "You can sketch a character to look it up if you don't know its pinyin or can't type it"
+    ],
+    "fixed": [
+      "Searching pinyin with a capital letter (e.g. \"Ni\") no longer returns incomplete results"
+    ]
+  },
+  {
+    "version": "1.2.3",
     "summary": "Add compound words and phrases search, contrast and accessibility polish",
     "added": [
       "Search compound words and short phrases, alongside single-character lookup"
     ],
     "fixed": [
       "Easier to tap links in the update notice",
-      "Character cross-references are easier to spot, and now work with keyboard navigation and screen readers"
+      "Character cross-references are easier to spot, and now work with keyboard navigation and screen readers",
+      "The update notice no longer scrolls out of view",
+      "You can type while the Cangjie reference panel is open in Practice Mode",
+      "Clearer, more readable text in Practice Mode"
     ]
   },
+
   {
     "version": "1.1.5",
     "summary": "Pinyin practice, deep-link sharing, changelog page, and interface polish",

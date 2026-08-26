@@ -6,6 +6,7 @@ import { SearchMode } from "@/types";
 const MODES: { value: SearchMode; label: string; ariaLabel: string }[] = [
   { value: "character", label: "Char", ariaLabel: "Search by character" },
   { value: "pinyin", label: "Pin", ariaLabel: "Search by pinyin" },
+  { value: "draw", label: "Draw", ariaLabel: "Search by drawing" },
 ];
 
 export default function SearchModeToggle({
